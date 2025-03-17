@@ -1,0 +1,31 @@
+{
+  "requests": {
+    "requestId1": {
+      "passengerId": "passenger123",
+      "pickupLocation": {
+        "latitude": 12.3456,
+        "longitude": 78.9012
+      },
+      "destinationLocation": {
+        "latitude": 13.4567,
+        "longitude": 79.0123
+      },
+      "timestamp": 1696859200000,
+      "status": "pending", 
+      "drivers": {
+        "driverId1": {
+          "name": "John Doe",
+          "vehicleModel": "Toyota Prius",
+          "rating": 4.5,
+          "acceptedAt": 1696859300000
+        },
+        "driverId2": {
+          "name": "Jane Smith",
+          "vehicleModel": "Honda Civic",
+          "rating": 4.7,
+          "acceptedAt": 1696859350000
+        }
+      }
+    }
+  }
+}
