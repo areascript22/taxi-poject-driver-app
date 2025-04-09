@@ -18,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 150),
       vsync: this,
     );
 
@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(milliseconds: 1000), () {
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const AuthWrapper()));
     });
@@ -51,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen>
           //   begin: Alignment.topCenter,
           //   end: Alignment.bottomCenter,
           // ),
-          color: Theme.of(context).colorScheme.secondary,
+          color: Theme.of(context).colorScheme.tertiary,
         ),
         child: Center(
           child: FadeTransition(
@@ -63,8 +63,8 @@ class _SplashScreenState extends State<SplashScreen>
                   borderRadius: BorderRadius.circular(60), // Makes it rounded
                   child: Image.asset(
                     'assets/img/launcher_icon_d.jpeg',
-                    width: 120,
-                    height: 120,
+                    width: 220,
+                    height: 220,
                     fit: BoxFit
                         .cover, // Ensures the image covers the circular shape
                   ),
@@ -75,9 +75,9 @@ class _SplashScreenState extends State<SplashScreen>
                 const SizedBox(height: 20),
                 const SizedBox(height: 20),
                 const Text(
-                  "Taxi Conductor",
+                  "TaxiGo Conductor",
                   style: TextStyle(
-                      fontSize: 34,
+                      fontSize: 37,
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),

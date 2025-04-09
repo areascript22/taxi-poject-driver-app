@@ -8,6 +8,7 @@ import 'package:driver_app/features/ride_request/viewmodel/ride_request_viewmode
 import 'package:driver_app/firebase_options.dart';
 
 import 'package:driver_app/shared/providers/shared_provider.dart';
+import 'package:driver_app/shared/providers/shared_updater.dart';
 import 'package:driver_app/shared/repositorie/local_stogare_service.dart';
 import 'package:driver_app/shared/repositorie/track_location_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -24,12 +25,12 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        //TODO : Modify the scope of each porvider
         ChangeNotifierProvider(
           create: (context) => SharedProvider(),
         ),
-        ChangeNotifierProvider(
-          create: (context) => AuthViewModel(),
-        ),
+        ChangeNotifierProvider(create: (context) => SharedUpdater()),
+        ChangeNotifierProvider(create: (context) => AuthViewModel()),
         ChangeNotifierProvider(
           create: (context) => HomeViewModel(),
         ),
@@ -44,9 +45,14 @@ void main() async {
         ),
       ],
       child: const MyApp(),
+
     ),
   );
 }
+
+//
+
+//
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -56,7 +62,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'TaxiGo Conductor',
       theme: lightMode,
       darkTheme: darkMode,
       home: const SplashScreen(),

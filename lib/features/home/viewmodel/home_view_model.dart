@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:driver_app/core/utils/toast_message_util.dart';
 import 'package:driver_app/features/home/repository/home_service.dart';
 import 'package:driver_app/shared/models/g_user.dart';
 import 'package:driver_app/shared/providers/shared_provider.dart';
+import 'package:driver_app/shared/providers/shared_updater.dart';
 import 'package:driver_app/shared/repositorie/local_notification_service.dart';
 import 'package:driver_app/shared/repositorie/push_notification_service.dart';
 import 'package:driver_app/shared/repositorie/shared_service.dart';
@@ -23,14 +25,16 @@ class HomeViewModel extends ChangeNotifier {
   final Logger logger = Logger();
   lc.Location location = lc.Location();
   bool _loading = false;
+  bool _loading2 = false;
 
   //LISTENERS
   StreamSubscription<ServiceStatus>? locationServicesAtSystemLevelListener;
   StreamSubscription<Position>? locationListener;
   StreamSubscription<DatabaseEvent>? deliveryRequestLitener;
   StreamSubscription<DatabaseEvent>? pendingRequestsLitener;
-  StreamSubscription<DatabaseEvent>?
-      requestAssignedListener; //When a driver is asigned to a request
+  StreamSubscription<DatabaseEvent>? onPendingRideRequestAdded;
+  StreamSubscription<DatabaseEvent>? requestAssignedListener; //driver asigned
+  StreamSubscription<DatabaseEvent>? emergencynotifyListener; //driver asigned
   StreamSubscription<List<ConnectivityResult>>? connectivityListener;
 
   bool _locationPermissionsSystemLevel = true; //Location services System level
@@ -49,6 +53,7 @@ class HomeViewModel extends ChangeNotifier {
 
   //GETTERS
   bool get loading => _loading;
+  bool get loading2 => _loading2;
   bool get isCurrentLocationAvailable => _isCurrentLocationAvailable;
   bool get isThereInternetConnection => _isThereInternetConnection;
   bool get locationPermissionsSystemLevel => _locationPermissionsSystemLevel;
@@ -61,6 +66,11 @@ class HomeViewModel extends ChangeNotifier {
   //SETTERS
   set loading(bool value) {
     _loading = value;
+    notifyListeners();
+  }
+
+  set loading2(bool value) {
+    _loading2 = value;
     notifyListeners();
   }
 
@@ -111,6 +121,9 @@ class HomeViewModel extends ChangeNotifier {
     deliveryRequestLitener?.cancel();
     requestAssignedListener?.cancel();
     connectivityListener?.cancel();
+    onPendingRideRequestAdded?.cancel();
+    pendingRequestsLitener?.cancel();
+    emergencynotifyListener?.cancel();
   }
 
   //Sign out
@@ -118,34 +131,6 @@ class HomeViewModel extends ChangeNotifier {
     loading = true;
     await SharedService.signOut();
     loading = false;
-  }
-
-  //Update Driver Status (pending, offline)
-  Future<bool> goOnlineOrOffline(String availavility, String driverRideStatus,
-      SharedProvider sharedProvider) async {
-    if (!isThereInternetConnection) {
-      return false;
-    }
-    if (availavility == Availability.offline) {
-      final success = await SharedService.freeUpDriverPositionInQueue();
-      if (success) {
-        final udaSuccess = await HomeService.updateDriverAvailability(
-            availavility, driverRideStatus);
-        if (udaSuccess) {
-          return await SharedService.removeCurrentDriver();
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-
-    if (availavility == Availability.online) {
-      return await HomeService.writeInitialDriverInfo(sharedProvider);
-    } else {
-      return false;
-    }
   }
 
   //To make sure every drivers knows when a request is assigned
@@ -170,13 +155,15 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   //Check internet connection
-  void listenToInternetConnection() {
+  void listenToInternetConnection(SharedProvider sharedProvider) {
     connectivityListener = connectivity.onConnectivityChanged
         .listen((List<ConnectivityResult> event) {
       if (event.isEmpty || event.contains(ConnectivityResult.none)) {
         isThereInternetConnection = false;
+        sharedProvider.isThereInternetConnection = false;
       } else {
         isThereInternetConnection = true;
+        sharedProvider.isThereInternetConnection = true;
         logger.f("THERE IS CONNECTION");
       }
     });
@@ -200,7 +187,7 @@ class HomeViewModel extends ChangeNotifier {
       //udpate the value in Firestore
       await HomeService.updateDeviceToken(deviceToken);
       // await HomeService.updateDeviceTokenInFRD(deviceToken);
-  //    await PushNotificationService.setupNotificationChannel();
+      //    await PushNotificationService.setupNotificationChannel();
       sharedProvider.currentDeviceToken = deviceToken;
     }
   }
@@ -210,7 +197,7 @@ class HomeViewModel extends ChangeNotifier {
     if (!isThereInternetConnection) {
       return {
         "priority": 0,
-        "color": Colors.red,
+        "color": const Color(0xFFD13C35),
         "title": "Sin conexión a internet",
         "content": "Conectate a internet para continuar",
       };
@@ -226,7 +213,7 @@ class HomeViewModel extends ChangeNotifier {
     if (!locationPermissionsSystemLevel) {
       return {
         "priority": 2,
-        "color": Colors.orange,
+        "color": const Color(0xFFFFC13C),
         "title": "Servicio de ubicación desactivados.",
         "content": "Click aquí para activarlo.",
       };
@@ -242,56 +229,108 @@ class HomeViewModel extends ChangeNotifier {
     return null;
   }
 
-  // To listen only Delivery request lenght
-  void listenToDeliveryRequests(DatabaseReference requestsRef) {
-    final SharedUtil sharedUtil = SharedUtil();
-    deliveryRequestLitener = requestsRef.onValue.listen((event) {
-      final data = event.snapshot.value as Map?;
-      if (data != null) {
-        // Filter pending requests
-        List<MapEntry<dynamic, dynamic>> entries = data.entries
-            .where((entry) => entry.value['status'] == 'pending')
-            .toList();
-        deliveryRequestLength = entries.length;
+  //RETURN TRUE if there is any issue (internet conextion, gps signal, etc)
+  bool isThereAnyIssue() {
+    return (!locationPermissionUserLevel ||
+        !locationPermissionsSystemLevel ||
+        !isCurrentLocationAvailable ||
+        !isThereInternetConnection);
+  }
 
-        if (tempDeliveryrequest != deliveryRequestLength) {
-          tempDeliveryrequest = deliveryRequestLength;
-          //Play sound and vibrate phone every time there is a new delivery
-          if (tempDeliveryrequest != 0) {
-            sharedUtil.playAudioOnce("sounds/new_delivery.mp3");
-            sharedUtil.makePhoneVibrate();
+  // To listen only Delivery request lenght
+  void listenToDeliveryRequests(
+      DatabaseReference requestsRef, SharedProvider sharedProvider) {
+    try {
+      final SharedUtil sharedUtil = SharedUtil();
+      deliveryRequestLitener = requestsRef.onValue.listen((event) {
+        final data = event.snapshot.value as Map?;
+        if (data != null) {
+          // Filter pending requests
+          List<MapEntry<dynamic, dynamic>> entries = data.entries
+              .where((entry) => entry.value['status'] == 'pending')
+              .toList();
+          if (sharedProvider.availavilityState == Availability.offline) {
+            return;
           }
+          deliveryRequestLength = entries.length;
+
+          if (tempDeliveryrequest != deliveryRequestLength) {
+            tempDeliveryrequest = deliveryRequestLength;
+            //Play sound and vibrate phone every time there is a new delivery
+            if (tempDeliveryrequest != 0) {
+              // sharedUtil.playAudioOnce("sounds/new_delivery.mp3");
+              // sharedUtil.makePhoneVibrate();
+            }
+          }
+        } else {
+          tempDeliveryrequest = 0;
+          deliveryRequestLength = 0;
         }
-      } else {
-        tempDeliveryrequest = 0;
-        deliveryRequestLength = 0;
-      }
-    });
+      });
+    } catch (e) {
+      logger.e("Error: $e");
+    }
   }
 
   // To listen only pending ride request lenght
-  void listenToPendingRideRequests(DatabaseReference requestsRef) {
-    pendingRequestsLitener = requestsRef.onValue.listen((event) {
-      final SharedUtil sharedUtil = SharedUtil();
-      final data = event.snapshot.value as Map?;
-      if (data != null) {
-        // Filter pending requests
-        List<MapEntry<dynamic, dynamic>> entries = data.entries
-            // .where((entry) => entry.value['status'] == 'pending')
-            .toList();
-        pendingRequestLength = entries.length;
-
-        if (tempPendingRequestLenght != pendingRequestLength) {
-          tempPendingRequestLenght = pendingRequestLength;
-          //Play sound and vibrate phone every time there is a new delivery
-          if (tempPendingRequestLenght != 0) {
-            sharedUtil.playAudioOnce("sounds/pending_ride.mp3");
-            sharedUtil.makePhoneVibrate();
+  void listenToPendingRideRequests(
+      DatabaseReference requestsRef, SharedProvider sharedProvider) {
+    try {
+      pendingRequestsLitener = requestsRef.onValue.listen((event) {
+        final data = event.snapshot.value as Map?;
+        if (data != null) {
+          // Filter pending requests
+          List<MapEntry<dynamic, dynamic>> entries = data.entries.toList();
+          if (sharedProvider.availavilityState == Availability.offline) {
+            return;
           }
+          pendingRequestLength = entries.length;
+        } else {
+          tempPendingRequestLenght = 0;
+          pendingRequestLength = 0;
         }
-      } else {
-        tempPendingRequestLenght = 0;
-        pendingRequestLength = 0;
+      });
+
+      //add
+      // onPendingRideRequestAdded = requestsRef.onChildAdded.listen((event) {
+      //   if (sharedProvider.availavilityState == Availability.offline) {
+      //     return;
+      //   }
+      //   if (sharedProvider.driverRideStatus != DriverRideStatus.pending) {
+      //     return;
+      //   }
+      //   final value = event.snapshot.value as Map;
+      //   final sector = value['sector'];
+      //   if (sector != null) {
+      //     sharedUtil.speakSectorName('Carrera al sector ${sector!}');
+      //   } else {
+      //     sharedUtil.playAudioOnce("sounds/pending_ride.mp3");
+      //   }
+      //   sharedUtil.makePhoneVibrate();
+      // });
+    } catch (e) {
+      logger.e("Error: $e");
+    }
+  }
+
+//LISTENER: To emergency notifications
+  void listenToEmergencyNotifications(SharedUpdater sharedUpdater) async {
+    final driverId = FirebaseAuth.instance.currentUser?.uid;
+    if (driverId == null) return;
+    final dbRef = FirebaseDatabase.instance.ref("emergency");
+    emergencynotifyListener = dbRef.onChildAdded.listen((event) {
+      if (event.snapshot.exists) {
+        final uid = event.snapshot.key as String;
+        final body = event.snapshot.value as Map;
+        if (uid == driverId) {
+          sharedUpdater.weAreInDanger = true;
+          sharedUtil.makePhoneVibrate();
+        } else {
+          LocalNotificationService.showNotification(
+            title: "Señal de emergencia activada",
+            body: "Unidad: ${body['taxiCode'] ?? ''}",
+          );
+        }
       }
     });
   }
@@ -418,5 +457,27 @@ class HomeViewModel extends ChangeNotifier {
   Future<void> requestLocationServiceSystemLevel() async {
     bool serviceEnabled = await location.requestService();
     locationPermissionsSystemLevel = serviceEnabled;
+  }
+
+  //Check data in Firebase
+  Future<bool> doesDriverExist() async {
+    try {
+      final driverId = FirebaseAuth.instance.currentUser?.uid;
+      final DatabaseReference ref =
+          FirebaseDatabase.instance.ref("drivers/$driverId");
+      final DataSnapshot snapshot = await ref.get();
+      return snapshot.exists;
+    } catch (e) {
+      print("Error al verificar el driver: $e");
+      return false;
+    }
+  }
+
+  //Cancel emergency notification
+  Future<void> cancelEmergencyNotificatino(SharedUpdater sharedUpdater) async {
+    if (isThereInternetConnection) {
+      sharedUpdater.weAreInDanger = false;
+      await HomeService.cancelEmergencyNotification();
+    }
   }
 }

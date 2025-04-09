@@ -103,10 +103,10 @@ class PassengerInfoTile extends StatelessWidget {
               Row(
                 children: [
                   CircleButton(
-                    icon: Icons.call_outlined,
+                    icon: Ionicons.logo_whatsapp,
                     label: "Contactar",
                     onPressed: () {
-                      sharedUtil.sendSMS(passenger.phone, '');
+                      sharedUtil.launchWhatsApp(passenger.phone);
                     },
                   ),
                 ],

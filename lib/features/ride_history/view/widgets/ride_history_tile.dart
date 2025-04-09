@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:driver_app/features/pending_ride_request/view/widgets/sector_card.dart';
 import 'package:driver_app/features/ride_history/view/pages/ride_history_details.dart';
 import 'package:driver_app/shared/models/request_type.dart';
 import 'package:driver_app/shared/models/ride_history_model.dart';
+import 'package:driver_app/shared/widgets/request_type_card.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ionicons/ionicons.dart';
@@ -16,19 +18,7 @@ class RideHistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String requestType = '';
-    switch (ride.requestType) {
-      case RequestType.byCoordinates:
-        requestType = "Coordenadas";
-        break;
-      case RequestType.byRecordedAudio:
-        requestType = "Audio";
-        break;
-      case RequestType.byTexting:
-        requestType = "Texto";
-        break;
-      default:
-    }
+  
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -69,16 +59,6 @@ class RideHistoryTile extends StatelessWidget {
                       ],
                     ),
                     //Drop off
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Ionicons.location,
-                          color: Colors.blue,
-                        ),
-                        Text(ride.dropOffLocation),
-                      ],
-                    ),
                   ],
                 ),
 
@@ -92,24 +72,15 @@ class RideHistoryTile extends StatelessWidget {
               // Text('Status: ${ride.status}'),
               Text(
                 'Fecha: ${formatTimestamp(ride.startTime)}',
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(color: Colors.grey[700]),
               ),
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const SizedBox(),
-                  Text(
-                    requestType,
-                    style: TextStyle(
-                      color: ride.requestType == RequestType.byCoordinates
-                          ? Colors.orange
-                          : ride.requestType == RequestType.byRecordedAudio
-                              ? Colors.green
-                              : Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  RequestTypeCard(requestTypeT: ride.requestType),
+                  const SizedBox(width: 15),
+                  SectorCard(sector: ride.sector),
                 ],
               ),
             ],
@@ -121,6 +92,6 @@ class RideHistoryTile extends StatelessWidget {
 
   String formatTimestamp(Timestamp timestamp) {
     DateTime dateTime = timestamp.toDate();
-    return DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
+    return DateFormat('yyyy/MM/dd HH:mm').format(dateTime);
   }
 }

@@ -2,8 +2,10 @@ import 'package:driver_app/core/utils/dialog/dialog_util.dart';
 import 'package:driver_app/features/home/viewmodel/home_view_model.dart';
 import 'package:driver_app/features/ride_history/view/pages/ride_history_page.dart';
 import 'package:driver_app/features/settings/view/pages/settings_page.dart';
+import 'package:driver_app/features/technical_support/view/pages/technical_support.dart';
 import 'package:driver_app/shared/providers/shared_provider.dart';
 import 'package:driver_app/shared/widgets/user_avatar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:provider/provider.dart';
@@ -100,36 +102,68 @@ class CustomDrawer extends StatelessWidget {
                 ),
 
                 //Help for driver
+                //Techinical support
                 ListTile(
-                  leading: const Icon(Ionicons.help),
-                  title: const Text("Ayuda"),
-                  onTap: () {},
+                  leading: const Icon(Icons.support_agent_outlined),
+                  title: const Text(
+                    "Soporte técnico",
+                    style: TextStyle(fontSize: 17),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TechnicalSupportContent(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
             //Sing Out
             Padding(
               padding: const EdgeInsets.only(bottom: 20),
-              child: ListTile(
-                leading: const Icon(Icons.logout_outlined),
-                title: const Text("Cerrar sesion"),
-                onTap: () {
-                  DialogUtil.messageDialog(
-                      context: context,
-                      onAccept: () async {
-                        //  Navigator.pop(context);
-                        await homeViewModel.signOut();
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
-                      },
-                      onCancel: () {
-                        Navigator.pop(context);
-                      },
-                      title: "¿Desea cerrar sesión?");
-                },
+              child: Column(
+                children: [
+                  // ListTile(
+                  //   leading: const Icon(Icons.logout_outlined),
+                  //   title: const Text("Cerrar sesion"),
+                  //   onTap: () {
+                  //     DialogUtil.messageDialog(
+                  //       context: context,
+                  //       onAccept: () async {
+                  //         //  Navigator.pop(context);
+                  //         try {
+                  //           homeViewModel.clearListeners();
+                  //           await FirebaseAuth.instance.signOut();
+                  //         } catch (e) {
+                  //           print("ERROR SIGNING OUT: $e");
+                  //         }
+
+                  //         if (context.mounted) {
+                  //           Navigator.pop(context);
+                  //         }
+                  //       },
+                  //       onCancel: () {
+                  //         Navigator.pop(context);
+                  //       },
+                  //       title: "¿Desea cerrar sesión?",
+                  //     );
+                  //   },
+                  // ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 40),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text('V ${sharedProvider.version}'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
+            //version
           ],
         ),
       ),

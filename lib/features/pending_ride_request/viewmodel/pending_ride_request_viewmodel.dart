@@ -41,6 +41,7 @@ class PendingRideRequestViewModel extends ChangeNotifier {
 
     if (response) {
       //Pending
+//      sharedProvider.isTherePassengerInTheWay = true;
       homeViewModel.currentPageIndex = 0;
       await PendingRideRequestService.removeRideRequest(passengerId);
     } else {

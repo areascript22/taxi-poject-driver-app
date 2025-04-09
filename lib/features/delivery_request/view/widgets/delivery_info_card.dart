@@ -81,7 +81,7 @@ class _DeliveryInfoCardState extends State<DeliveryInfoCard> {
                           children: [
                             //type
                             RequestTypeCard(
-                                requestType: deliveryRequestViewModel
+                                requestTypeT: deliveryRequestViewModel
                                     .deliveryRequestModel!.requestType),
                             const SizedBox(height: 4.0),
                             //By Coords
@@ -115,24 +115,24 @@ class _DeliveryInfoCardState extends State<DeliveryInfoCard> {
                                       ],
                                     ),
                                     //Drop off location
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Ionicons.location,
-                                          color: Colors.blue,
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            deliveryRequestViewModel
-                                                .deliveryRequestModel!
-                                                .information
-                                                .dropOffLocation,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    // Row(
+                                    //   children: [
+                                    //     const Icon(
+                                    //       Ionicons.location,
+                                    //       color: Colors.blue,
+                                    //     ),
+                                    //     Expanded(
+                                    //       child: Text(
+                                    //         deliveryRequestViewModel
+                                    //             .deliveryRequestModel!
+                                    //             .information
+                                    //             .dropOffLocation,
+                                    //         maxLines: 1,
+                                    //         overflow: TextOverflow.ellipsis,
+                                    //       ),
+                                    //     ),
+                                    //   ],
+                                    // ),
                                     //Details
                                     const SizedBox(height: 6.0),
                                     Row(
@@ -225,8 +225,10 @@ class _DeliveryInfoCardState extends State<DeliveryInfoCard> {
                                   .deliveryRequestModel!.information.phone);
                             },
                             icon: const Icon(
-                                Ionicons.chatbubble_ellipses_outline,
-                                size: 30),
+                              Ionicons.logo_whatsapp,
+                              color: Colors.green,
+                              size: 40,
+                            ),
                           ),
                         ],
                       ),

@@ -27,6 +27,7 @@ import 'package:provider/provider.dart';
 class RideRequestViewModel extends ChangeNotifier {
   final String apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
   final Logger logger = Logger();
+  bool _loading = false;
   // final RideRequestService realtimeDBService = RideRequestService();
   final SharedUtil sharedUtil = SharedUtil();
   BuildContext? rideRequestPageContext;
@@ -42,6 +43,9 @@ class RideRequestViewModel extends ChangeNotifier {
   String _driverRideStatus = '';
   LatLng? driverCurrenPosition;
   int? _routeDuration; //For the CountDown timer
+
+  //For ride
+  Timestamp? startTime;
 
   //For Driver Queue Positions
   bool _driverInQueue = false;
@@ -67,6 +71,7 @@ class RideRequestViewModel extends ChangeNotifier {
   Marker? _taxiMarker;
 
   //GETTERS
+  bool get loading => _loading;
   bool get driverInQueue => _driverInQueue;
   int? get currenQueuePoosition => _currenQueuePoosition;
   Polyline get polylineFromPickUpToDropOff => _polylineFromPickUpToDropOff;
@@ -79,6 +84,11 @@ class RideRequestViewModel extends ChangeNotifier {
   int? get routeDuration => _routeDuration;
 
   //SETTERS
+  set loading(bool value) {
+    _loading = value;
+    notifyListeners();
+  }
+
   set driverInQueue(bool value) {
     _driverInQueue = value;
     notifyListeners();
@@ -227,37 +237,36 @@ class RideRequestViewModel extends ChangeNotifier {
   //fit all markers on the map
   Future<void> fitMarkers(SharedProvider sharedProvider) async {
     // Check if pick-up and drop-off coordinates are not null
-    if (passengerInformation == null ||
-        sharedProvider.driverCurrentPosition == null) {
-      return;
-    }
-    LatLng p1;
-    if (requestType == RequestType.byCoordinates) {
-      p1 = passengerInformation!.pickUpCoordinates;
-    } else {
-      p1 = passengerInformation!.currentCoordenates;
-    }
-
-    LatLng p2 = LatLng(sharedProvider.driverCurrentPosition!.latitude,
-        sharedProvider.driverCurrentPosition!.longitude);
-
-    GoogleMapController controller = await mapController.future;
-
-    // Create LatLngBounds for the two points
-    LatLngBounds bounds = LatLngBounds(
-      southwest: LatLng(
-        p1.latitude < p2.latitude ? p1.latitude : p2.latitude,
-        p1.longitude < p2.longitude ? p1.longitude : p2.longitude,
-      ),
-      northeast: LatLng(
-        p1.latitude > p2.latitude ? p1.latitude : p2.latitude,
-        p1.longitude > p2.longitude ? p1.longitude : p2.longitude,
-      ),
-    );
-
-    CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 100);
-
     try {
+      if (passengerInformation == null ||
+          sharedProvider.driverCurrentPosition == null) {
+        return;
+      }
+      LatLng p1;
+      if (requestType == RequestType.byCoordinates) {
+        p1 = passengerInformation!.pickUpCoordinates;
+      } else {
+        p1 = passengerInformation!.currentCoordenates;
+      }
+
+      LatLng p2 = LatLng(sharedProvider.driverCurrentPosition!.latitude,
+          sharedProvider.driverCurrentPosition!.longitude);
+
+      GoogleMapController controller = await mapController.future;
+
+      // Create LatLngBounds for the two points
+      LatLngBounds bounds = LatLngBounds(
+        southwest: LatLng(
+          p1.latitude < p2.latitude ? p1.latitude : p2.latitude,
+          p1.longitude < p2.longitude ? p1.longitude : p2.longitude,
+        ),
+        northeast: LatLng(
+          p1.latitude > p2.latitude ? p1.latitude : p2.latitude,
+          p1.longitude > p2.longitude ? p1.longitude : p2.longitude,
+        ),
+      );
+
+      CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 100);
       await controller.animateCamera(cameraUpdate);
     } catch (e) {
       logger.e("Error trying to animate camera: $e");
@@ -423,6 +432,8 @@ class RideRequestViewModel extends ChangeNotifier {
 
             //Update passenger information
             passengerInformation = tempPassengerInformation;
+            startTime = Timestamp.now();
+
             //Update Driver ride status
             if (driverRideStatus == DriverRideStatus.pending ||
                 driverRideStatus == DriverRideStatus.reserved ||
@@ -459,7 +470,7 @@ class RideRequestViewModel extends ChangeNotifier {
               }
             }
             //Play sound
-            sharedUtil.playAudioOnce('sounds/nuevo_pedido.mp3');
+            // sharedUtil.playAudioOnce('sounds/nuevo_pedido.mp3');
             //Free up driver position in Queue
             freeUpDriverPositionInQueue();
             fitMarkers(sharedProvider);
@@ -532,27 +543,33 @@ class RideRequestViewModel extends ChangeNotifier {
 
   //LISTENER: to lsiten value changes under 'drivers/driverId/status'
   void listenToDriverStatus(
-      SharedProvider sharedProvider, BuildContext context) {
+      SharedProvider sharedProvider, BuildContext context) async {
     final String? driverId = FirebaseAuth.instance.currentUser?.uid;
     if (driverId == null) {
       logger.e("User not atuthenticated");
       return;
     }
+
     final databaseRefStatus =
         FirebaseDatabase.instance.ref('drivers/$driverId/status');
     final databaseRefAvailability =
         FirebaseDatabase.instance.ref('drivers/$driverId/availability');
+    await databaseRefAvailability.get();
 
     try {
       String availability = sharedProvider.availavilityState;
+
       //AVAILABILITY LISTENER
       driverAvailabilityListener =
           databaseRefAvailability.onValue.listen((event) {
         if (event.snapshot.exists) {
           final availavilityTemp = event.snapshot.value as String;
           availability = availavilityTemp;
+
+          sharedProvider.availavilityState = availability;
         }
       });
+
       //STATUS LISTENER
       driverStatusListener =
           databaseRefStatus.onValue.listen((DatabaseEvent event) async {
@@ -610,6 +627,7 @@ class RideRequestViewModel extends ChangeNotifier {
               );
               break;
             case DriverRideStatus.finished:
+              routeDuration = null;
               driverRideStatus = DriverRideStatus.finished;
               sharedProvider.driverRideStatus = DriverRideStatus.finished;
               await RideRequestService.updateDriverAvailability(
@@ -735,18 +753,20 @@ class RideRequestViewModel extends ChangeNotifier {
         driverId: driverId,
         passengerId: passengerId!,
         pickupCoords: passengerInformation!.pickUpCoordinates,
-        dropoffCoords: passengerInformation!.dropOffCoordinates,
-        pickUpLocation: passengerInformation!.pickUpLocation,
-        dropOffLocation: passengerInformation!.dropOffLocation,
-        startTime: Timestamp.now(),
+        dropoffCoords: LatLng(
+            sharedProvider.driverCurrentPosition?.latitude ?? 0.1,
+            sharedProvider.driverCurrentPosition?.longitude ?? 0),
+        pickUpLocation: passengerInformation?.pickUpLocation ?? 'n/a',
+        startTime: startTime ?? Timestamp.now(),
         endTime: Timestamp.now(),
-        distance: 0.1,
-        driverName: sharedProvider.driver!.name,
-        passengerName: passengerInformation!.name,
+        passengerName: passengerInformation?.name ?? 'n/a',
+        driverName: sharedProvider.driver?.name ?? 'n/a',
         status: driverRideStatus,
         requestType: requestType!,
         audioFilePath: passengerInformation!.audioFilePath,
         indicationText: passengerInformation!.indicationText,
+        sector: sharedProvider.sector,
+        timesTamp: DateTime.now(),
       );
       await RideRequestService.uploadRideHistory(rideHistory);
     } catch (e) {
@@ -784,14 +804,19 @@ class RideRequestViewModel extends ChangeNotifier {
   }
 
   //Book position in queue
-  Future<void> bookPositionInQueue() async {
+  Future<void> bookPositionInQueue(SharedProvider sharedProvider) async {
     final String? driverId = FirebaseAuth.instance.currentUser?.uid;
     if (driverId == null) {
       logger.e("User not atuthenticated");
       return;
     }
-    driverInQueue =
-        await RideRequestService.bookDriverPositionInQueue(idUsuario: driverId);
+    if (sharedProvider.driver != null) {
+      driverInQueue = await RideRequestService.bookDriverPositionInQueue(
+        idUsuario: driverId,
+        taxiCode: sharedProvider.driver!.vehicle?.taxiCode ?? 'N/A',
+        profilePicture: sharedProvider.driver?.profilePicture ?? '',
+      );
+    }
   }
 
 //Stream to get drivers ordered bassed on timestamp field
@@ -816,10 +841,31 @@ class RideRequestViewModel extends ChangeNotifier {
         for (int i = 0; i < sortedDrivers.length; i++) {
           if (sortedDrivers[i].value['driver_id'] == driverId) {
             return i + 1; // Return the position (1-based index)
+            // final current = sortedDrivers[i].value;
+            // return {
+            //   "index":i+1,
+            //   "taxiCode":current['taxiCode'],
+            // };
           }
         }
       }
       return null; // Return null if the driver is not in the queue
     });
+  }
+
+  //EmegencyNotification
+  Future<void> sendEmergencyNotify(
+      SharedProvider sharedProvider, BuildContext context) async {
+    loading = true;
+    final taxicode = sharedProvider.driver?.vehicle?.taxiCode;
+    if (taxicode != null) {
+      final response = await SharedService.emergencyNotification(taxicode);
+      if (response && context.mounted) {
+        ToastMessageUtil.showToast(
+            "Notificación de emergencia enviada", context);
+      }
+    }
+
+    loading = false;
   }
 }

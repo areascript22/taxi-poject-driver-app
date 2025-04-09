@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:logger/logger.dart';
 
 class SharedService {
+  static Logger logger = Logger();
   //It returns a route as polylines (it is use to update polyline in Porvider)
   static Future<RouteInfo?> getRoutePolylinePoints(
       LatLng start, LatLng end, String apiKey) async {
@@ -36,9 +37,10 @@ class SharedService {
         logger.i(
             "Result getting route: ${result.durationTexts} type: ${result.durationTexts![0]}");
         return RouteInfo(
-          distance: "",
+          distance:
+              result.distanceTexts != null ? result.distanceTexts![0] : "0 km",
           duration:
-              result.durationTexts != null ? result.durationTexts![0] : "",
+              result.durationTexts != null ? result.durationTexts![0] : "0 min",
           polylinePoints: routePoints,
         );
       } on TimeoutException catch (e) {
@@ -182,6 +184,42 @@ class SharedService {
       logger.i("✅ Comment added successfully.");
     } catch (e) {
       logger.e("❌ Error adding comment: $e");
+    }
+  }
+
+  //Emergency button (notify all drivers)
+  static Future<bool> emergencyNotification(String taxiCode) async {
+    try {
+      final driverId = FirebaseAuth.instance.currentUser?.uid;
+      final dbRef = FirebaseDatabase.instance.ref('emergency');
+      await dbRef.update({
+        "$driverId": {
+          "taxiCode": taxiCode,
+          "timestamp": ServerValue.timestamp,
+        }
+      });
+      return true;
+    } catch (e) {
+      logger.e("Error while sending emergency notification: $e");
+      return false;
+    }
+  }
+
+  //Update Availability status
+  static Future<bool> updateDriverAvailability(
+      String availability, String driverRideStatus) async {
+    final DatabaseReference database = FirebaseDatabase.instance.ref();
+    try {
+      String driverId = FirebaseAuth.instance.currentUser!.uid;
+      await database.child('drivers/$driverId').update({
+        'availability': availability,
+        'status_availability': "${driverRideStatus}_$availability",
+      }).timeout(ConfigF.timeOut);
+      logger.i("Driver availability updated successfully.");
+      return true;
+    } catch (e) {
+      logger.e("Error updating availability: $e");
+      return false;
     }
   }
 }

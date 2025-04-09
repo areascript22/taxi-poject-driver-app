@@ -28,16 +28,16 @@ class DeliveryRequestListTile extends StatelessWidget {
       onTap: () async {
         if (sharedProvider.availavilityState == Availability.offline) {
           ToastMessageUtil.showToast(
-            "Cambia tu estado a disponible para aceptar la encomienda.",context
-          );
+              "Cambia tu estado a disponible para aceptar la encomienda.",
+              context);
           return;
         }
         //Update Delivery request model in provider
         deliveryRequestViewModel.deliveryRequestModel = deliveryRequestModel;
         //    sharedProvider.passengerInformation = deliveryRequestModel.information;
         //Write driver data in realtime database
-        await deliveryRequestViewModel
-            .writeDriverDataUnderDeliveryRequest(sharedProvider, context);
+        await deliveryRequestViewModel.writeDriverDataUnderDeliveryRequest(
+            sharedProvider, context);
         //Navigate to map page, display info and start navigating
       },
       child: Padding(
@@ -82,7 +82,7 @@ class DeliveryRequestListTile extends StatelessWidget {
                   children: [
                     //reqeust type card
                     RequestTypeCard(
-                      requestType: deliveryRequestModel.requestType,
+                      requestTypeT: deliveryRequestModel.requestType,
                     ),
                     //Reqeust info
                     const SizedBox(height: 5),

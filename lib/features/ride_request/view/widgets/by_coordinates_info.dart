@@ -31,21 +31,21 @@ class ByCoordinatesInfo extends StatelessWidget {
             ),
           ],
         ),
-        Row(
-          children: [
-            const Icon(
-              Ionicons.location,
-              color: Colors.blue,
-            ),
-            Expanded(
-              child: Text(
-                rideRequestViewModel.passengerInformation!.dropOffLocation,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
+        // Row(
+        //   children: [
+        //     const Icon(
+        //       Ionicons.location,
+        //       color: Colors.blue,
+        //     ),
+        //     Expanded(
+        //       child: Text(
+        //         rideRequestViewModel.passengerInformation!.dropOffLocation,
+        //         maxLines: 1,
+        //         overflow: TextOverflow.ellipsis,
+        //       ),
+        //     ),
+        //   ],
+        // ),
       ],
     );
   }

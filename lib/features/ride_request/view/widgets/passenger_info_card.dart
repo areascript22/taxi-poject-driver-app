@@ -1,6 +1,7 @@
 import 'package:driver_app/features/home/view/widgets/custom_elevated_button.dart';
 import 'package:driver_app/features/ride_request/view/widgets/by_coordinates_info.dart';
 import 'package:driver_app/features/ride_request/view/widgets/by_text_info.dart';
+import 'package:driver_app/shared/widgets/buttons/emergency_button.dart';
 import 'package:driver_app/shared/widgets/custom_audio_player.dart';
 import 'package:driver_app/features/ride_request/viewmodel/ride_request_viewmodel.dart';
 import 'package:driver_app/shared/models/g_user.dart';
@@ -39,21 +40,30 @@ class _PassengerInfoCardState extends State<PassengerInfoCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 //Open Map options to navigate
-                CustomTextButton(
-                  onPressed: () {
-                    rideRequestViewModel.showAvailableMaps(context);
-                  },
-                  child: const Text("Navegar"),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //Fit markers button
+                    CustomCircularButton(
+                      onPressed: () =>
+                          rideRequestViewModel.fitMarkers(sharedProvider),
+                      icon: const Icon(
+                        Ionicons.git_branch_outline,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    //navigate button
+                    CustomTextButton(
+                      onPressed: () {
+                        rideRequestViewModel.showAvailableMaps(context);
+                      },
+                      child: const Text("Navegar"),
+                    ),
+                  ],
                 ),
 
                 //Fit all Markers  on map
-                CustomCircularButton(
-                  onPressed: () =>
-                      rideRequestViewModel.fitMarkers(sharedProvider),
-                  icon: const Icon(
-                    Ionicons.git_branch_outline,
-                  ),
-                ),
+                const EmergencyButton(),
               ],
             ),
           ),
@@ -109,7 +119,7 @@ class _PassengerInfoCardState extends State<PassengerInfoCard> {
                               children: [
                                 //Request Type
                                 RequestTypeCard(
-                                  requestType:
+                                  requestTypeT:
                                       rideRequestViewModel.requestType ?? '',
                                 ),
                                 const SizedBox(height: 5),
@@ -150,8 +160,9 @@ class _PassengerInfoCardState extends State<PassengerInfoCard> {
                                   }
                                 },
                                 icon: const Icon(
-                                  Ionicons.chatbubble_ellipses_outline,
-                                  size: 30,
+                                  Ionicons.logo_whatsapp,
+                                  color: Colors.green,
+                                  size: 40,
                                 ),
                               ),
                             ],

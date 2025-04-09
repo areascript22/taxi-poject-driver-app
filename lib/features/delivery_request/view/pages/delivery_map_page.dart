@@ -4,6 +4,7 @@ import 'package:driver_app/features/delivery_request/view/widgets/bottom_sheet_c
 import 'package:driver_app/features/delivery_request/view/widgets/delivery_info_card.dart';
 import 'package:driver_app/features/delivery_request/viewmodel/delivery_request_viewmodel.dart';
 import 'package:driver_app/shared/providers/shared_provider.dart';
+import 'package:driver_app/shared/widgets/buttons/emergency_button.dart';
 import 'package:driver_app/shared/widgets/custom_circular_button.dart';
 import 'package:driver_app/shared/widgets/custom_text_button.dart';
 import 'package:flutter/material.dart';
@@ -178,21 +179,29 @@ class _DeliveryMapPageState extends State<DeliveryMapPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           //Navigate button
-                          CustomTextButton(
-                            onPressed: () => deliveryRequestViewModel
-                                .showAvailableMaps(sharedProvider, context),
-                            child: const Text("Navegar"),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              //Animate camera to the current coords
+                              CustomCircularButton(
+                                onPressed: () {
+                                  deliveryRequestViewModel
+                                      .fitMarkers(sharedProvider);
+                                },
+                                icon: const Icon(
+                                  Ionicons.git_branch_outline,
+                                ),
+                              ),
+                              //asdfsadfsdf
+                              const SizedBox(height: 15),
+                              CustomTextButton(
+                                onPressed: () => deliveryRequestViewModel
+                                    .showAvailableMaps(sharedProvider, context),
+                                child: const Text("Navegar"),
+                              ),
+                            ],
                           ),
-                          //Animate camera to the current coords
-                          CustomCircularButton(
-                            onPressed: () {
-                              deliveryRequestViewModel
-                                  .fitMarkers(sharedProvider);
-                            },
-                            icon: const Icon(
-                              Ionicons.git_branch_outline,
-                            ),
-                          ),
+                          const EmergencyButton()
                         ],
                       ),
                     ),

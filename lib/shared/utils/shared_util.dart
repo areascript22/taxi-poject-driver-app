@@ -1,10 +1,12 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vibration/vibration.dart';
 
 class SharedUtil {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final FlutterTts flutterTts = FlutterTts();
   final logger = Logger();
 
   //Open Options like whatsapp and SMS
@@ -63,6 +65,44 @@ class SharedUtil {
       Vibration.vibrate();
     } else {
       logger.e("Vibration is not available.");
+    }
+  }
+
+  /// Cola de habla
+  Future _speechQueue = Future.value();
+//Text to speech
+  Future<void> speakSectorName(String name) {
+    // Añadimos a la cola de habla
+    _speechQueue = _speechQueue.then((_) async {
+      try {
+        await flutterTts.awaitSpeakCompletion(true);
+        await flutterTts.setLanguage("es-ES");
+        await flutterTts.setSpeechRate(0.5);
+        await flutterTts.setPitch(1.0);
+        await flutterTts.speak(name);
+      } catch (e) {
+        logger.e('Error en speakSectorName: $e');
+      }
+    });
+
+    // Devolvemos el nuevo estado de la cola
+    return _speechQueue;
+  }
+
+//
+  Future<void> openEmailApp() async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: 'taxigo11032025@gmail.com', // Cambia al email del administrador
+      queryParameters: {
+        'subject': 'Consulta desde la app',
+        'body': 'Hola, me gustaría hacer una consulta sobre...'
+      },
+    );
+    try {
+      await launchUrl(emailUri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      logger.e('No se pudo abrir la aplicación de correo, $e');
     }
   }
 }

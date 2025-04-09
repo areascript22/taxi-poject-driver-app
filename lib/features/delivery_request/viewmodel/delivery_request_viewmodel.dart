@@ -116,37 +116,36 @@ class DeliveryRequestViewModel extends ChangeNotifier {
   //fit all markers
   //fit all markers on the map
   Future<void> fitMarkers(SharedProvider sharedProvider) async {
-    // Check if pick-up and drop-off coordinates are not null
-    if (deliveryRequestModel == null) {
-      return;
-    }
-    LatLng p1;
-    if (deliveryRequestModel!.requestType == RequestType.byCoordinates) {
-      p1 = deliveryRequestModel!.information.pickUpCoordinates;
-    } else {
-      p1 = deliveryRequestModel!.information.currentCoordenates;
-    }
-
-    LatLng p2 = LatLng(sharedProvider.driverCurrentPosition!.latitude,
-        sharedProvider.driverCurrentPosition!.longitude);
-
-    GoogleMapController controller = await mapController.future;
-
-    // Create LatLngBounds for the two points
-    LatLngBounds bounds = LatLngBounds(
-      southwest: LatLng(
-        p1.latitude < p2.latitude ? p1.latitude : p2.latitude,
-        p1.longitude < p2.longitude ? p1.longitude : p2.longitude,
-      ),
-      northeast: LatLng(
-        p1.latitude > p2.latitude ? p1.latitude : p2.latitude,
-        p1.longitude > p2.longitude ? p1.longitude : p2.longitude,
-      ),
-    );
-
-    CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 100);
-
     try {
+      // Check if pick-up and drop-off coordinates are not null
+      if (deliveryRequestModel == null) {
+        return;
+      }
+      LatLng p1;
+      if (deliveryRequestModel!.requestType == RequestType.byCoordinates) {
+        p1 = deliveryRequestModel!.information.pickUpCoordinates;
+      } else {
+        p1 = deliveryRequestModel!.information.currentCoordenates;
+      }
+
+      LatLng p2 = LatLng(sharedProvider.driverCurrentPosition!.latitude,
+          sharedProvider.driverCurrentPosition!.longitude);
+
+      GoogleMapController controller = await mapController.future;
+
+      // Create LatLngBounds for the two points
+      LatLngBounds bounds = LatLngBounds(
+        southwest: LatLng(
+          p1.latitude < p2.latitude ? p1.latitude : p2.latitude,
+          p1.longitude < p2.longitude ? p1.longitude : p2.longitude,
+        ),
+        northeast: LatLng(
+          p1.latitude > p2.latitude ? p1.latitude : p2.latitude,
+          p1.longitude > p2.longitude ? p1.longitude : p2.longitude,
+        ),
+      );
+
+      CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 100);
       await controller.animateCamera(cameraUpdate);
     } catch (e) {
       logger.e("Error trying to animate camera: $e");
@@ -234,29 +233,24 @@ class DeliveryRequestViewModel extends ChangeNotifier {
     }
     Coords origin = Coords(sharedProvider.driverCurrentPosition!.latitude,
         sharedProvider.driverCurrentPosition!.longitude);
-
 //Open map opctions to navigate
-    if (driverDeliveryStatus == DeliveryStatus.goingForThePackage) {
-      if (deliveryRequestModel!.requestType == RequestType.byCoordinates) {
-        Coords destination = Coords(
-            deliveryRequestModel!.information.pickUpCoordinates.latitude,
-            deliveryRequestModel!.information.pickUpCoordinates.longitude);
-
-        sharedProvider.showAllAvailableMaps(context, origin, destination);
-      } else {
-        Coords destinationTemp = Coords(
-          deliveryRequestModel!.information.currentCoordenates.latitude,
-          deliveryRequestModel!.information.currentCoordenates.longitude,
-        );
-        sharedProvider.showAllAvailableMaps(context, origin, destinationTemp);
-      }
+    if (deliveryRequestModel!.requestType == RequestType.byCoordinates) {
+      Coords destination = Coords(
+          deliveryRequestModel!.information.pickUpCoordinates.latitude,
+          deliveryRequestModel!.information.pickUpCoordinates.longitude);
+      sharedProvider.showAllAvailableMaps(context, origin, destination);
     } else {
-      if (driverCurrentcoords != null) {
-        Coords destinationTemp = Coords(
-            driverCurrentcoords!.latitude, driverCurrentcoords!.longitude);
-        sharedProvider.showAllAvailableMaps(context, origin, destinationTemp);
-      }
+      Coords destinationTemp = Coords(
+        deliveryRequestModel!.information.currentCoordenates.latitude,
+        deliveryRequestModel!.information.currentCoordenates.longitude,
+      );
+      sharedProvider.showAllAvailableMaps(context, origin, destinationTemp);
     }
+    // if (driverCurrentcoords != null) {
+    //   Coords destinationTemp = Coords(
+    //       driverCurrentcoords!.latitude, driverCurrentcoords!.longitude);
+    //   sharedProvider.showAllAvailableMaps(context, origin, destinationTemp);
+    // }
   }
 
   //Load custom icon

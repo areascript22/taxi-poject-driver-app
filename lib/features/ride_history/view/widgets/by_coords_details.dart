@@ -55,8 +55,8 @@ class _ByCoordsDetailsState extends State<ByCoordsDetails> {
                   zoomControlsEnabled: false,
                   zoomGesturesEnabled: false,
                   initialCameraPosition: const CameraPosition(
-                    target: LatLng(37.7749, -122.4194), // Example coordinates
-                    zoom: 12,
+                    target: LatLng(-1.662539, -78.662170),
+                    zoom: 15,
                   ),
                   onMapCreated: (GoogleMapController controller) {
                     value.onMapCreated(controller);
@@ -94,7 +94,7 @@ class _ByCoordsDetailsState extends State<ByCoordsDetails> {
                   children: [
                     const Icon(Ionicons.location, color: Colors.blue),
                     Text(
-                      widget.ride.dropOffLocation,
+                      value.dropOffLocation ?? "Sin definir",
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -119,7 +119,8 @@ class _ByCoordsDetailsState extends State<ByCoordsDetails> {
                         children: [
                           const Text('Duración'),
                           Text(
-                            '${calculateDuration(widget.ride.startTime, widget.ride.endTime).inMinutes} mins',
+                            // '${calculateDuration(widget.ride.startTime, widget.ride.endTime).inMinutes} mins',
+                            value.duration,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -136,7 +137,7 @@ class _ByCoordsDetailsState extends State<ByCoordsDetails> {
                         children: [
                           const Text('Distancia'),
                           Text(
-                            '${widget.ride.distance} km',
+                            value.distance,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],

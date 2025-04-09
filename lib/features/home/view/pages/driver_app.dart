@@ -1,16 +1,18 @@
 import 'package:driver_app/features/delivery_request/view/pages/delivery_page_wrapper.dart';
 import 'package:driver_app/features/home/view/widgets/custom_drawer.dart';
+import 'package:driver_app/features/home/view/widgets/custom_elevated_button.dart';
 import 'package:driver_app/features/home/view/widgets/services_issues_alert.dart';
 import 'package:driver_app/features/pending_ride_request/view/pages/pending_ride_request_page.dart';
 import 'package:driver_app/features/ride_request/view/pages/ride_request_page.dart';
 import 'package:driver_app/features/home/viewmodel/home_view_model.dart';
-
 import 'package:driver_app/shared/providers/shared_provider.dart';
 import 'package:driver_app/features/home/view/widgets/custom_toggle_button.dart';
+import 'package:driver_app/shared/providers/shared_updater.dart';
 import 'package:driver_app/shared/repositorie/push_notification_service.dart';
-import 'package:driver_app/shared/repositorie/track_location_service.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -34,22 +36,18 @@ class _DriverAppState extends State<DriverApp> with WidgetsBindingObserver {
 //   startForegroundService();
   }
 
-  void startForegroundService() async {
-    await startBackgroundService();
-  }
-  //Try to get Device Token For Push notification
-
   //Check all location permissions
   void checkGpsPermissions() async {
     final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
     final sharedProvider = Provider.of<SharedProvider>(context, listen: false);
+    final sharedUpdater = Provider.of<SharedUpdater>(context, listen: false);
     homeViewModelToDispose = homeViewModel;
 
     // homeViewModel.startForegroundTask();
     homeViewModel.listenToDeliveryRequests(
-        FirebaseDatabase.instance.ref('delivery_requests'));
+        FirebaseDatabase.instance.ref('delivery_requests'), sharedProvider);
     homeViewModel.listenToPendingRideRequests(
-        FirebaseDatabase.instance.ref('driver_requests'));
+        FirebaseDatabase.instance.ref('driver_requests'), sharedProvider);
     homeViewModel.listenToRequestAssigned();
     bool gpsPermissions =
         await homeViewModel.checkGpsPermissions(sharedProvider);
@@ -57,7 +55,8 @@ class _DriverAppState extends State<DriverApp> with WidgetsBindingObserver {
     sharedProvider.isGPSPermissionsEnabled = gpsPermissions;
     //  homeViewModel.startLocationTracking(sharedProvider);
     homeViewModel.initializeNotifications(sharedProvider);
-    homeViewModel.listenToInternetConnection();
+    homeViewModel.listenToInternetConnection(sharedProvider);
+    homeViewModel.listenToEmergencyNotifications(sharedUpdater);
 
     listenToBackgroundMessages();
     await PushNotificationService.initializeNotificationChannel();
@@ -75,14 +74,16 @@ class _DriverAppState extends State<DriverApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final homeViewModel = Provider.of<HomeViewModel>(context);
     final sharedProvider = Provider.of<SharedProvider>(context, listen: false);
+    final sharedUpdater = Provider.of<SharedUpdater>(context);
     return Scaffold(
       key: sharedProvider.driverAppScaffoldKey,
       appBar: AppBar(
+        backgroundColor: homeViewModel.getIssueBassedOnPriority()?['color'],
         automaticallyImplyLeading: false,
-        toolbarHeight: 40,
-        title: CustomToggleButton(
-          onToggle: (bool isOnline) {},
-        ),
+        toolbarHeight: homeViewModel.isThereAnyIssue() ? 0 : 40,
+        title: homeViewModel.isThereAnyIssue()
+            ? const SizedBox()
+            : const CustomToggleButton(),
         bottom: homeViewModel.getIssueBassedOnPriority() != null
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(60.0),
@@ -93,19 +94,74 @@ class _DriverAppState extends State<DriverApp> with WidgetsBindingObserver {
             : null,
       ),
       drawer: const CustomDrawer(),
-      body: Stack(children: [
-        //Content
-        IndexedStack(
-          index: homeViewModel.currentPageIndex,
-          children: const [
-            // PermissionsPage(),
-            RideMRequestPage(),
-            PendingRideRequestPage(),
-            //DeliveryRequestPage(),
-            DeliveryPageWrapper(),
-          ],
-        ),
-      ]),
+      body: Column(
+        children: [
+          //Emergency banner
+          if (sharedUpdater.weAreInDanger)
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Color(0xFFFFFACD),
+                    size: 35,
+                  ),
+                  const Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Text(
+                        "Todos los conductores recibieron tu notificación de emergencia.",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFFFACD)),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => homeViewModel
+                        .cancelEmergencyNotificatino(sharedUpdater),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+          //pages
+          Expanded(
+            child: Stack(children: [
+              //Content
+              IndexedStack(
+                index: homeViewModel.currentPageIndex,
+                children: const [
+                  // PermissionsPage(),
+                  RideMRequestPage(),
+                  PendingRideRequestPage(),
+                  //DeliveryRequestPage(),
+                  DeliveryPageWrapper(),
+                ],
+              ),
+            ]),
+          ),
+        ],
+      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: homeViewModel.loading
+      //       ? null
+      //       : () => homeViewModel.sendEmergencyNotify(sharedProvider, context),
+      //   backgroundColor:
+      //       homeViewModel.weAreInDanger ? Colors.red[300] : Colors.green[300],
+      //   child: homeViewModel.loading
+      //       ? const CircularProgressIndicator()
+      //       : const Icon(
+      //           Icons.warning_amber_rounded,
+      //           color: Colors.white,
+      //           size: 35,
+      //         ),
+      // ),
       bottomNavigationBar: homeViewModel.locationPermissionsSystemLevel
           ? BottomNavigationBar(
               currentIndex: homeViewModel.currentPageIndex,
@@ -188,7 +244,7 @@ class _DriverAppState extends State<DriverApp> with WidgetsBindingObserver {
                   label: 'Órdenes',
                 ),
               ],
-              selectedItemColor: Colors.blueAccent,
+              selectedItemColor: Colors.purple,
               unselectedItemColor: Colors.grey,
               showUnselectedLabels: true,
             )

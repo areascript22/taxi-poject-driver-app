@@ -81,12 +81,12 @@ class SecondPassengerTile extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RequestTypeCard(requestType: requestType),
+            RequestTypeCard(requestTypeT: requestType),
           ],
         ),
         titleAlignment: ListTileTitleAlignment.top,
         trailing: PopupMenuButton<int>(
-          onSelected: (value) async{
+          onSelected: (value) async {
             switch (value) {
               case 0:
                 //Cancel ride

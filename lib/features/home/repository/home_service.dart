@@ -15,7 +15,6 @@ class HomeService {
   //Write initial Driver info
   static Future<bool> writeInitialDriverInfo(
       SharedProvider sharedProvider) async {
-    final Logger logger = Logger();
     final currentLocation = sharedProvider.driverCurrentPosition;
     if (currentLocation == null) {
       logger.e("NO current location available");
@@ -31,7 +30,8 @@ class HomeService {
       final DatabaseReference databaseRef =
           FirebaseDatabase.instance.ref().child('drivers/$driverId');
       //Get Device Token
-      String? deviceToken = await PushNotificationService.getDeviceToken().timeout(ConfigF.timeOut);
+      String? deviceToken = await PushNotificationService.getDeviceToken()
+          .timeout(ConfigF.timeOut);
       // Write the initial full data
       Map<String, dynamic> driverData = {
         "availability": Availability.online,
@@ -63,39 +63,9 @@ class HomeService {
     }
   }
 
-  // //Update Location in Firebase
-  // static Future<void> updateDriverCurrentLocationInFirebase(
-  //     Position position) async {
-  //   final Logger logger = Logger();
-  //   try {
-  //     // Get the authenticated driver's ID
-  //     String? driverId = FirebaseAuth.instance.currentUser?.uid;
-  //     if (driverId == null) {
-  //       logger.i("User is not authenticated");
-  //       return;
-  //     }
-  //     // Reference to the driver's node in Firebase
-  //     final DatabaseReference databaseRef =
-  //         FirebaseDatabase.instance.ref().child('drivers/$driverId');
-  //     // Update only the location field
-  //     Map<String, dynamic> locationData = {
-  //       "location": {
-  //         "latitude": position.latitude,
-  //         "longitude": position.longitude,
-  //       },
-  //     };
-  //     await databaseRef.update(locationData);
-  //     // logger.i(
-  //     //     "Location updated in Firebase: ${position.latitude}, ${position.longitude}");
-  //   } catch (e) {
-  //     logger.e("Error writing/updating location in Firebase: $e");
-  //   }
-  // }
-
   // Function to write location to Firebase
   static Future<void> writeOrUpdateLocationInFirebase(
       Position position, GUser driver) async {
-    final Logger logger = Logger();
     try {
       // Get the authenticated driver's ID
       String? driverId = FirebaseAuth.instance.currentUser?.uid;
@@ -157,32 +127,8 @@ class HomeService {
     }
   }
 
-  //To handler disconection from Datbase
-
-  // static Future<void> setOnDisconnectHandler() async {
-  //   try {
-  //     String? driverId = FirebaseAuth.instance.currentUser?.uid;
-  //     if (driverId == null) return;
-  //     //Reference to "drivers" node
-  //     final DatabaseReference databaseRef =
-  //         FirebaseDatabase.instance.ref().child('drivers/$driverId');
-  //     //Reference to "positions" node
-  //     final DatabaseReference positionReference =
-  //         FirebaseDatabase.instance.ref().child('positions/$driverId');
-
-  //     // Schedule removal of location data when the app disconnects
-  //     await databaseRef.onDisconnect().remove();
-
-  //     await positionReference.onDisconnect().remove();
-  //     Logger().i("onDisconnect handler set for driverId: $driverId");
-  //   } catch (e) {
-  //     Logger().e("Error setting onDisconnect handler: $e");
-  //   }
-  // }
-
   //Update device token in Firestore
   static Future<void> updateDeviceToken(String deviceToken) async {
-    final logger = Logger();
     String? userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       return;
@@ -200,7 +146,6 @@ class HomeService {
 
   //
   static Future<void> updateDeviceTokenInFRD(String newToken) async {
-    final logger = Logger();
     try {
       String? driverId = FirebaseAuth.instance.currentUser?.uid;
       if (driverId == null) {
@@ -220,33 +165,19 @@ class HomeService {
     }
   }
 
-  //Update Availability status
-  static Future<bool> updateDriverAvailability(
-      String availability, String driverRideStatus) async {
-    final logger = Logger();
-    final DatabaseReference database = FirebaseDatabase.instance.ref();
+
+
+  //Cancel emergency notifications in DB
+  static Future<bool> cancelEmergencyNotification() async {
     try {
-      String driverId = FirebaseAuth.instance.currentUser!.uid;
-      await database.child('drivers/$driverId').update({
-        'availability': availability,
-        'status_availability': "${driverRideStatus}_$availability",
-      }).timeout(ConfigF.timeOut);
-      logger.i("Driver availability updated successfully.");
+      final driverId = FirebaseAuth.instance.currentUser?.uid;
+      final dbRef = FirebaseDatabase.instance.ref('emergency/$driverId');
+      await dbRef.remove();
+      logger.e("Removed");
       return true;
     } catch (e) {
-      logger.e("Error updating availability: $e");
+      logger.e("Error while canceling emergency notification: $e");
       return false;
     }
   }
-
-  //Go Offline
-  // static Future<bool> goOffline() async {
-  //   try {
-  //     final driverId = FirebaseAuth.instance.currentUser!.uid;
-
-  //     return true;
-  //   } catch (e) {
-  //     return false;
-  //   }
-  // }
 }

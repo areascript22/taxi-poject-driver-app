@@ -8,16 +8,16 @@ class RideHistoryModel {
   LatLng pickupCoords;
   LatLng dropoffCoords;
   String pickUpLocation;
-  String dropOffLocation;
   Timestamp startTime;
   Timestamp endTime;
-  double distance;
-  String driverName;
   String passengerName;
+  String driverName;
   String status;
   String requestType;
   String audioFilePath;
   String indicationText;
+  String sector;
+  DateTime timesTamp;
 
   RideHistoryModel({
     this.rideId,
@@ -26,17 +26,16 @@ class RideHistoryModel {
     required this.pickupCoords,
     required this.dropoffCoords,
     required this.pickUpLocation,
-    required this.dropOffLocation,
     required this.startTime,
     required this.endTime,
-    required this.distance,
-    required this.driverName,
     required this.passengerName,
+    required this.driverName,
     required this.status,
     required this.requestType,
     required this.audioFilePath,
     required this.indicationText,
-    
+    required this.sector,
+    required this.timesTamp,
   });
 
   // Convert a document from Firestore into a RideHistory instance
@@ -47,25 +46,26 @@ class RideHistoryModel {
       rideId: data['rideId'] ?? '',
       driverId: data['driverId'] ?? '',
       passengerId: data['passengerId'] ?? '',
-      pickupCoords: data['pickupLocation'] != null
-          ? LatLng(data['pickupLocation']['latitude'],
-              data['pickupLocation']['longitude'])
+      pickupCoords: data['pickupCoords'] != null
+          ? LatLng(data['pickupCoords']['latitude'],
+              data['pickupCoords']['longitude'])
           : const LatLng(0, 0),
-      dropoffCoords: data['dropoffLocation'] != null
-          ? LatLng(data['dropoffLocation']['latitude'],
-              data['dropoffLocation']['longitude'])
+      dropoffCoords: data['dropoffCoords'] != null
+          ? LatLng(data['dropoffCoords']['latitude'],
+              data['dropoffCoords']['longitude'])
           : const LatLng(0, 0),
-      pickUpLocation: data['pickUpLocation'] ?? '',
-      dropOffLocation: data['dropOffLocation'] ?? '',
+      pickUpLocation: data['pickUpLocation'] ?? 'n/a',
       startTime: data['startTime'] ?? Timestamp.now(),
       endTime: data['endTime'] ?? Timestamp.now(),
-      distance: (data['distance'] ?? 0).toDouble(),
-      driverName: data['driverName'] ?? '',
-      passengerName: data['passengerName'] ?? '',
+      passengerName: data['passengerName'] ?? 'n/a',
+      driverName: data['driverName'] ?? 'n/a',
       status: data['status'] ?? '',
       requestType: data['requestType'] ?? 'byCoordinates',
-      audioFilePath:data['audioFilePath']??'',
-      indicationText: data['indicationText']??''
+      audioFilePath: data['audioFilePath'] ?? '',
+      indicationText: data['indicationText'] ?? '',
+      sector: data['sector'] ?? 'Desconocido',
+      timesTamp:
+          data['timesTamp'] is DateTime ? data['timesTamp'] : DateTime.now(),
     );
   }
 
@@ -75,25 +75,25 @@ class RideHistoryModel {
       'rideId': rideId,
       'driverId': driverId,
       'passengerId': passengerId,
-      'pickupLocation': {
+      'pickupCoords': {
         'latitude': pickupCoords.latitude,
         'longitude': pickupCoords.longitude,
       },
-      'dropoffLocation': {
+      'dropoffCoords': {
         'latitude': dropoffCoords.latitude,
         'longitude': dropoffCoords.longitude,
       },
       'pickUpLocation': pickUpLocation,
-      'dropOffLocation': dropOffLocation,
       'startTime': startTime,
       'endTime': endTime,
-      'distance': distance,
-      'driverName': driverName,
       'passengerName': passengerName,
+      'driverName': driverName,
       'status': status,
       'requestType': requestType,
-      'indicationText':indicationText,
-      'audioFilePath':audioFilePath,
+      'indicationText': indicationText,
+      'audioFilePath': audioFilePath,
+      'sector': sector,
+      'timesTamp': timesTamp,
     };
   }
 }

@@ -1,6 +1,6 @@
-import 'package:driver_app/features/auth/view/widgets/auth_gradient_button.dart';
 import 'package:driver_app/features/auth/view/widgets/custom_text_field.dart';
 import 'package:driver_app/features/auth/viewmodel/auth_viewmodel.dart';
+import 'package:driver_app/features/home/view/widgets/custom_elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -36,8 +36,10 @@ class PasswordRecoveryPage extends StatelessWidget {
               //Email TextField
               CustomTextField(
                 textEditingController: emailTextController,
-                hintText: 'Email',
+                hintText: 'Correo electrónico',
                 validator: (value) {
+                  value = value?.trim();
+                  emailTextController.text = emailTextController.text.trim();
                   if (value == null || value.isEmpty) {
                     return 'Por favor, ingrese su correo electrónico'; // Required validation
                   }
@@ -54,7 +56,7 @@ class PasswordRecoveryPage extends StatelessWidget {
 
               //Sign In Button
               const SizedBox(height: 15),
-              AuthGradientButton(
+              CustomElevatedButton(
                 child: !authViewModel.loading
                     ? const Text(
                         'Recuperar',
@@ -64,7 +66,8 @@ class PasswordRecoveryPage extends StatelessWidget {
                     : const CircularProgressIndicator(
                         color: Colors.blue,
                       ),
-                onPressed: () async {
+                onTap: () async {
+                  FocusScope.of(context).unfocus();
                   // Validate the form
                   if (formKey.currentState?.validate() ?? false) {
                     await authViewModel.sendPasswordRecoveryEmail(

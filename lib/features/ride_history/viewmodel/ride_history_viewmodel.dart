@@ -15,10 +15,16 @@ class RideHistoryViewmodel extends ChangeNotifier {
   Polyline _polylineFromPickUpToDropOff =
       const Polyline(polylineId: PolylineId("default"));
   Set<Marker> _markers = {};
+  String? _dropOffLocation;
+  String _duration = '0 mins';
+  String _distance = '0 km';
 
   //GETTERS
   Polyline get polylineFromPickUpToDropOff => _polylineFromPickUpToDropOff;
   Set<Marker> get markers => _markers;
+  String? get dropOffLocation => _dropOffLocation;
+  String get duration => _duration;
+  String get distance => _distance;
   //SETTERS
   set polylineFromPickUpToDropOff(Polyline value) {
     _polylineFromPickUpToDropOff = value;
@@ -27,6 +33,21 @@ class RideHistoryViewmodel extends ChangeNotifier {
 
   set markers(Set<Marker> value) {
     _markers = value;
+    notifyListeners();
+  }
+
+  set dropOffLocation(String? value) {
+    _dropOffLocation = value;
+    notifyListeners();
+  }
+
+  set duration(String value) {
+    _duration = value;
+    notifyListeners();
+  }
+
+  set distance(String value) {
+    _distance = value;
     notifyListeners();
   }
 
@@ -49,8 +70,12 @@ class RideHistoryViewmodel extends ChangeNotifier {
       point1: pickUpCoords,
       point2: dropOffCoords,
     );
+
     //draw route
     _drawRoute(pickUpCoords, dropOffCoords);
+    //Get drop off location
+    dropOffLocation = await RideHistoryService.getReadableAddress(
+        dropOffCoords.latitude, dropOffCoords.longitude, apiKey);
   }
 
   //add markers
@@ -115,10 +140,13 @@ class RideHistoryViewmodel extends ChangeNotifier {
       return;
     }
     polylineFromPickUpToDropOff = Polyline(
-        polylineId: const PolylineId("default"),
-        points: response.polylinePoints,
-        color: Colors.blue,
-        width: 5);
+      polylineId: const PolylineId("default"),
+      points: response.polylinePoints,
+      color: Colors.blue,
+      width: 5,
+    );
+    distance = response.distance;
+    duration = response.duration;
   }
 
   //Retrieve passenger model from Firestore

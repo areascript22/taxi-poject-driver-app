@@ -1,3 +1,4 @@
+import 'package:driver_app/features/home/repository/home_service.dart';
 import 'package:driver_app/shared/models/g_user.dart';
 import 'package:driver_app/shared/models/passenger_request.dart';
 import 'package:driver_app/shared/repositorie/shared_service.dart';
@@ -11,6 +12,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:logger/logger.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:image/image.dart' as img;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SharedProvider extends ChangeNotifier {
@@ -22,21 +24,31 @@ class SharedProvider extends ChangeNotifier {
   bool isGPSPermissionsEnabled = false;
   Position? driverCurrentPosition;
   String? rideRequestmodel;
-  int _currentPageIndez = 0;
+  bool isThereInternetConnection = true;
+
   String? currentDeviceToken; //For Push notifications
   String availavilityState = Availability.offline;
-  String driverRideStatus = DriverRideStatus.pending;
+
+  //To DISPLAY AND HIDE DELIVERY AND RIDE REQEUSTS
+  String _driverRideStatus = DriverRideStatus.pending;
+  static String driverRideStatusS = DriverRideStatus.pending;
   PassengerRequest? secondPassenger;
+  bool isTherePassengerInTheWay = false;
+  String version = '';
+  String sector = 'n/a';
 
-  //GETTERS
-  int get currentPageIndez => _currentPageIndez;
-
-  //SETTERS
-  set currentPageIndez(int value) {
-    _currentPageIndez = value;
-    notifyListeners();
+//  GETTERS
+  String get driverRideStatus => _driverRideStatus;
+//SETTERS
+  set driverRideStatus(String value) {
+    _driverRideStatus = value;
+    SharedProvider.driverRideStatusS = value;
   }
 
+  //CONTRUCTOR
+  SharedProvider() {
+    _loadVersion();
+  }
   //BOTTOM SHEET: It displays all available maps
   Future<void> showAllAvailableMaps(
       BuildContext context, Coords origin, Coords destination) async {
@@ -205,5 +217,40 @@ class SharedProvider extends ChangeNotifier {
 
     ///
     overlayEntry.remove();
+  }
+
+  //To load current vertion
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    version = info.version;
+    notifyListeners();
+  }
+
+  //Update Driver Status (pending, offline)
+  Future<bool> goOnlineOrOffline(String availavility, String driverRideStatus,
+      SharedProvider sharedProvider) async {
+    if (!isThereInternetConnection) {
+      return false;
+    }
+    if (availavility == Availability.offline) {
+      final success = await SharedService.freeUpDriverPositionInQueue();
+      if (success) {
+        final udaSuccess = await SharedService.updateDriverAvailability(
+            availavility, driverRideStatus);
+        if (udaSuccess) {
+          return await SharedService.removeCurrentDriver();
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    if (availavility == Availability.online) {
+      return await HomeService.writeInitialDriverInfo(sharedProvider);
+    } else {
+      return false;
+    }
   }
 }

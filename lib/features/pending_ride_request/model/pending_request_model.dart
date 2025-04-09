@@ -6,6 +6,7 @@ class PendingRequestModel {
   final String pickUpLocation;
   final String profilePicture;
   final String requestType;
+  final String? sector;
 
   PendingRequestModel({
     required this.key,
@@ -15,6 +16,7 @@ class PendingRequestModel {
     required this.pickUpLocation,
     required this.profilePicture,
     required this.requestType,
+    required this.sector,
   });
 
   // Factory method to create an instance from JSON
@@ -27,6 +29,7 @@ class PendingRequestModel {
       pickUpLocation: json['pickUpLocation'] ?? '',
       profilePicture: json['profilePicture'] ?? '',
       requestType: json['requestType'] ?? '',
+      sector: json['sector'],
     );
   }
 
@@ -34,11 +37,12 @@ class PendingRequestModel {
   Map<String, dynamic> toJson() {
     return {
       'dropOffLocation': dropOffLocation,
-      'currentLocation':currentLocation,
+      'currentLocation': currentLocation,
       'name': name,
       'pickUpLocation': pickUpLocation,
       'profilePicture': profilePicture,
       'requestType': requestType,
+      'sector': sector,
     };
   }
 }

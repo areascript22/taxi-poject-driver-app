@@ -11,6 +11,14 @@ class ServicesIssueAlert extends StatelessWidget {
   Widget build(BuildContext context) {
     final homeViewModel = Provider.of<HomeViewModel>(context);
     final sharedProvider = Provider.of<SharedProvider>(context);
+    //Defina letters color
+    late Color textColor;
+    if (dataMap['priority'] == 0) {
+      textColor = Colors.white;
+    } else {
+      textColor = Colors.black;
+    }
+
     return GestureDetector(
       onTap: () async {
         switch (dataMap['priority']) {
@@ -30,14 +38,22 @@ class ServicesIssueAlert extends StatelessWidget {
         height: 60.0,
         child: Center(
           child: ListTile(
+            leading: dataMap['priority'] == 0
+                ? const Icon(
+                    Icons.wifi_off_outlined,
+                    size: 30,
+                    color: Colors.white,
+                  )
+                : null,
             title: Text(
               dataMap['title'],
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
             ),
             subtitle: Text(
               dataMap['content'],
               textAlign: TextAlign.center,
+              style: TextStyle(color: textColor),
             ),
           ),
         ),

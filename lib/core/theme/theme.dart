@@ -8,6 +8,7 @@ ThemeData lightMode = ThemeData.light().copyWith(
     inversePrimary: Colors.black,
     primary: Color(0xFFF5F5F5),
     secondary: Colors.blue,
+    tertiary: Colors.purple,
   ),
 
   textSelectionTheme: TextSelectionThemeData(
@@ -37,7 +38,7 @@ ThemeData lightMode = ThemeData.light().copyWith(
   //Elevated button
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.blue, // Blue background
+      backgroundColor: Colors.purple, // Blue background
       foregroundColor: Colors.white, // White text color
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12), // Rounded corners
@@ -56,6 +57,7 @@ ThemeData darkMode = ThemeData.dark().copyWith(
     inversePrimary: Colors.white, //For icon (select profile image)
     primary: Color(0xFF323943),
     secondary: Color(0xFF252527),
+    tertiary: Color(0xFF252527),
   ),
   textSelectionTheme: TextSelectionThemeData(
     cursorColor: Colors.white, // Set the cursor color to white
@@ -85,7 +87,7 @@ ThemeData darkMode = ThemeData.dark().copyWith(
   //Elevatted button
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.blueAccent, // Slightly darker blue for dark mode
+      backgroundColor: Colors.purple, // Slightly darker blue for dark mode
       foregroundColor: Colors.white, // White text color
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12), // Rounded corners

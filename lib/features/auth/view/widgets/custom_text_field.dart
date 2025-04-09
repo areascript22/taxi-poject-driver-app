@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-
-
 class CustomTextField extends StatelessWidget {
   final String hintText;
   final bool isObscureText;
@@ -21,6 +19,7 @@ class CustomTextField extends StatelessWidget {
       obscureText: isObscureText,
       controller: textEditingController,
       decoration: InputDecoration(
+        labelText: hintText,
         hintText: hintText,
       ),
       validator: validator,

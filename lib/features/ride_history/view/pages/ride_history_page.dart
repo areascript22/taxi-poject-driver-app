@@ -20,16 +20,18 @@ class RideHistoryPage extends StatelessWidget {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Mis viajes',
-          style: Theme.of(context).textTheme.titleMedium,
+        title: const Text(
+          'Carreras realizadas',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+          maxLines: 2,
         ),
+        iconTheme: const IconThemeData(color: Colors.purple),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('ride_history')
             .where('driverId', isEqualTo: driverId) // Filter by driverId
-            //.orderBy('startTime', descending: true) // Order by most recent
+            .orderBy('timesTamp', descending: true) // Order by most recent
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -40,7 +42,9 @@ class RideHistoryPage extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching ride history'));
+            logger.e("Error: ${snapshot.error}");
+            return Center(
+                child: Text('Error fetching ride history: ${snapshot.error}'));
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -63,4 +67,3 @@ class RideHistoryPage extends StatelessWidget {
     );
   }
 }
-

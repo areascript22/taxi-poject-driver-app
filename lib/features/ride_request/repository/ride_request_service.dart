@@ -9,9 +9,10 @@ import 'package:logger/logger.dart';
 
 class RideRequestService {
   //To book position, driver is added to queue
-  static Future<bool> bookDriverPositionInQueue({
-    required String idUsuario,
-  }) async {
+  static Future<bool> bookDriverPositionInQueue(
+      {required String idUsuario,
+      required String taxiCode,
+      required String profilePicture}) async {
     final Logger logger = Logger();
     final DatabaseReference dbRef = FirebaseDatabase.instance.ref('positions');
 
@@ -19,6 +20,8 @@ class RideRequestService {
     final Map<String, dynamic> data = {
       'timestamp': ServerValue.timestamp, // Add Firebase server timestamp
       'driver_id': idUsuario,
+      'taxiCode': taxiCode,
+      'profilePicture': profilePicture,
       // 'profilePicture':,
     };
 
@@ -174,7 +177,8 @@ class RideRequestService {
       await database.child('drivers/$driverId').update({
         'status_availability': "${driverRideStatus}_$availability",
       }).timeout(ConfigF.timeOut);
-      logger.i("Driver availability updated successfully.");
+      logger.i(
+          "Driver availability updated successfully. ${driverRideStatus}_$availability asdfasdf");
       return true;
     } catch (e) {
       logger.e("Error updating availability: $e");
