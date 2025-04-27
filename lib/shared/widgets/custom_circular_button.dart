@@ -15,14 +15,14 @@ class CustomCircularButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme
-            .background, // Set the background color
+            .surface, // Set the background color
         shape: BoxShape.circle, // Optional: make it circular
         boxShadow: [
           BoxShadow(
             color: Theme.of(context)
                 .colorScheme
                 .inversePrimary
-                .withOpacity(0.1), // Shadow color with opacity
+                .withValues(alpha: 0.1), // Shadow color with opacity
             blurRadius: 6, // Spread of the shadow
             offset:
                 const Offset(0, 2), // Shadow position (horizontal, vertical)

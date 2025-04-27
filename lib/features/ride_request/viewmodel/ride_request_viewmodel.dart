@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:driver_app/core/utils/toast_message_util.dart';
 import 'package:driver_app/features/ride_request/repository/ride_request_service.dart';
 import 'package:driver_app/features/ride_request/utils/ride_history_util.dart';
+import 'package:driver_app/shared/repositorie/track_location_service.dart';
 import 'package:driver_app/shared/widgets/bottom_sheeet_star_ratings.dart';
 import 'package:driver_app/shared/models/delivery_request_model.dart';
 import 'package:driver_app/shared/models/g_user.dart';
@@ -25,7 +27,9 @@ import 'package:map_launcher/map_launcher.dart';
 import 'package:provider/provider.dart';
 
 class RideRequestViewModel extends ChangeNotifier {
-  final String apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+  final String apiKey = Platform.isAndroid
+      ? dotenv.env['GOOGLE_MAPS_API_KEY_ANDROID'] ?? ''
+      : dotenv.env['GOOGLE_MAPS_API_KEY_IOS'] ?? '';
   final Logger logger = Logger();
   bool _loading = false;
   // final RideRequestService realtimeDBService = RideRequestService();
@@ -341,9 +345,10 @@ class RideRequestViewModel extends ChangeNotifier {
   }
 
   //Icons
-  void loadIcons() async {
+  void loadIcons(SharedProvider sharedProvier) async {
     taxiIcon = await RideHistoryUtil.convertImageToBitmapDescriptor(
         'assets/img/taxi.png');
+    sharedProvier.taxiIcon = taxiIcon;
   }
 
   //LISTENER: To Redraw route when there is passenger info
@@ -374,14 +379,14 @@ class RideRequestViewModel extends ChangeNotifier {
           }
 
           //When There is a passenger
-          if (passengerInformation != null) {
-            //Draw Polyline
-            LatLng destination = passengerInformation!.dropOffCoordinates;
-            if (driverRideStatus == DriverRideStatus.goingToPickUp) {
-              destination = passengerInformation!.pickUpCoordinates;
-            }
-            await _drawRouteBetWeenCoords(driverCurrentCoords, destination);
-          }
+          // if (passengerInformation != null) {
+          //   //Draw Polyline
+          //   LatLng destination = passengerInformation!.dropOffCoordinates;
+          //   if (driverRideStatus == DriverRideStatus.goingToPickUp) {
+          //     destination = passengerInformation!.pickUpCoordinates;
+          //   }
+          //   await _drawRouteBetWeenCoords(driverCurrentCoords, destination);
+          // }
         }
       });
     } catch (e) {
@@ -549,6 +554,7 @@ class RideRequestViewModel extends ChangeNotifier {
       logger.e("User not atuthenticated");
       return;
     }
+   
 
     final databaseRefStatus =
         FirebaseDatabase.instance.ref('drivers/$driverId/status');
@@ -635,7 +641,7 @@ class RideRequestViewModel extends ChangeNotifier {
                 driverRideStatus,
                 availability,
               );
-              if (passengerId != null) {
+              if (passengerId != null && context.mounted) {
                 showStarRatingsBottomSheet(context, passengerId!);
               }
               markers.clear();
@@ -671,7 +677,6 @@ class RideRequestViewModel extends ChangeNotifier {
               sharedProvider.driverRideStatus = DriverRideStatus.canceled;
               passengerInformation = null;
               routeDuration = null;
-
               await RideRequestService.removePassengerInfo();
               markers.clear();
               polylineFromPickUpToDropOff =
@@ -682,17 +687,7 @@ class RideRequestViewModel extends ChangeNotifier {
                 driverRideStatus,
                 availability,
               );
-              //Check if there is a second passenger waiting
-              if (secondPassenger != null) {
-                await updateDriverStatus(DriverRideStatus.goingToPickUp);
-                await RideRequestService.addPassengerDataToRequest(
-                    secondPassenger!);
-                await RideRequestService.removesecondPassengerInfo();
-              } else {
-                //Update to "pending" to be able to accept requests again
-                await updateDriverStatus(DriverRideStatus.pending);
-              }
-
+              await updateDriverStatus(DriverRideStatus.pending);
               if (context.mounted) {
                 ToastMessageUtil.showToast(
                     "La carrera ha sido cancelada", context);

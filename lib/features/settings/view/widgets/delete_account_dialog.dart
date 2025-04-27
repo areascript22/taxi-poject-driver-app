@@ -1,4 +1,3 @@
-import 'package:driver_app/features/auth/view/pages/auth_wrapper_page.dart';
 import 'package:driver_app/features/home/view/widgets/custom_elevated_button.dart';
 import 'package:driver_app/features/settings/viewmodel/settings_viewmodel.dart';
 import 'package:driver_app/shared/providers/shared_provider.dart';

@@ -135,7 +135,7 @@ class _DeliveryMapPageState extends State<DeliveryMapPage> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: Theme.of(context).colorScheme.background,
+                      color: Theme.of(context).colorScheme.surface,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),

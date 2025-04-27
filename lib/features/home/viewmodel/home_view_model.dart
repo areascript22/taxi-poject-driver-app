@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:driver_app/core/utils/toast_message_util.dart';
 import 'package:driver_app/features/home/repository/home_service.dart';
 import 'package:driver_app/shared/models/g_user.dart';
 import 'package:driver_app/shared/providers/shared_provider.dart';
@@ -19,7 +19,9 @@ import 'package:location/location.dart' as lc;
 import 'package:logger/logger.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  final String apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+  final String apiKey = Platform.isAndroid
+      ? dotenv.env['GOOGLE_MAPS_API_KEY_ANDROID'] ?? ''
+      : dotenv.env['GOOGLE_MAPS_API_KEY_IOS'] ?? '';
   final sharedUtil = SharedUtil();
   // Driver? driver;
   final Logger logger = Logger();
@@ -134,16 +136,17 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   //To make sure every drivers knows when a request is assigned
-  void listenToRequestAssigned() async {
+  void listenToRequestAssigned(SharedProvider sharedProvider) async {
     try {
       final driverId = FirebaseAuth.instance.currentUser!.uid;
       final ref = FirebaseDatabase.instance.ref('assignedRequests');
+      requestAssignedListener?.cancel();
       requestAssignedListener = ref.onChildAdded.listen((event) async {
         //get driver id
         final tempDriverId = event.snapshot.key as String;
         logger.f("value to notify all: $tempDriverId }");
 
-        if (tempDriverId != driverId) {
+        if (tempDriverId != driverId && sharedProvider.availavilityState==Availability.online) {
           await sharedUtil.playAudioOnce('sounds/new_assigned_ride.mp3');
           await LocalNotificationService.showNotification(
               title: 'Una carrera ha sido asignada');
@@ -241,7 +244,7 @@ class HomeViewModel extends ChangeNotifier {
   void listenToDeliveryRequests(
       DatabaseReference requestsRef, SharedProvider sharedProvider) {
     try {
-      final SharedUtil sharedUtil = SharedUtil();
+    //  final SharedUtil sharedUtil = SharedUtil();
       deliveryRequestLitener = requestsRef.onValue.listen((event) {
         final data = event.snapshot.value as Map?;
         if (data != null) {

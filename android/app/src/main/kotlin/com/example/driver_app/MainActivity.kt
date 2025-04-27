@@ -15,20 +15,20 @@ class MainActivity: FlutterActivity(){
         super.onCreate(savedInstanceState)
 
         // Acceder al FlutterEngine y al BinaryMessenger
-        val flutterEngine = flutterEngine ?: return
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-            if (call.method == "bringAppToForeground") {
-                bringAppToForeground(this)
-                result.success(null)
-            } else {
-                result.notImplemented()
-            }
-        }
+//        val flutterEngine = flutterEngine ?: return
+//        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+//            if (call.method == "bringAppToForeground") {
+//                bringAppToForeground(this)
+//                result.success(null)
+//            } else {
+//                result.notImplemented()
+//            }
+//        }
     }
 
-    private fun bringAppToForeground(context: Context) {
-        val intent = packageManager.getLaunchIntentForPackage(packageName)
-        intent?.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
-    }
+//    private fun bringAppToForeground(context: Context) {
+//        val intent = packageManager.getLaunchIntentForPackage(packageName)
+//        intent?.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK
+//        startActivity(intent)
+//    }
 }

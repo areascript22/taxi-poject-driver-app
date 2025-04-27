@@ -86,7 +86,7 @@ class _DeliveryByAudioState extends State<DeliveryByAudio> {
   String formatTime(Duration duration) {
     String twoDigitSeconds =
         duration.inSeconds.remainder(60).toString().padLeft(1, "0");
-    String formatedTime = "${duration.inMinutes}: ${twoDigitSeconds}";
+    String formatedTime = "${duration.inMinutes}: $twoDigitSeconds";
     return formatedTime;
   }
 
@@ -135,7 +135,7 @@ class _DeliveryByAudioState extends State<DeliveryByAudio> {
                       activeTrackColor: Colors.green,
                       inactiveTrackColor: Colors.white24,
                       thumbColor: Colors.green,
-                      overlayColor: Colors.green.withOpacity(0.2),
+                      overlayColor: Colors.green.withValues(alpha: 0.2),
                       thumbShape:
                           const RoundSliderThumbShape(enabledThumbRadius: 6.0),
                       trackHeight: 2.0,

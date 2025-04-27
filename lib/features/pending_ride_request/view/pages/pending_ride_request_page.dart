@@ -66,11 +66,11 @@ class _PendingRideRequestPageState extends State<PendingRideRequestPage> {
                       data.entries.toList();
                   List<MapEntry<dynamic, dynamic>> entriesToBuild = [];
                   //Filter only pending requests
-                  entriesRaw.forEach((element) {
+                  for (var element in entriesRaw) {
                     // if (element.value['status'] == 'pending') {
                     entriesToBuild.add(element);
                     //  }
-                  });
+                  }
 
                   /// 🔥 ORDENAMOS POR TIMESTAMP DESCENDENTE (más recientes primero)
                   entriesToBuild.sort((a, b) {

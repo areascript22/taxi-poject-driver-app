@@ -17,92 +17,95 @@ class DeliveryRequestPage extends StatefulWidget {
 
 class _DeliveryRequestPageState extends State<DeliveryRequestPage> {
   final DatabaseReference requestsRef =
-      FirebaseDatabase.instance.ref('delivery_requests');
+  FirebaseDatabase.instance.ref('delivery_requests');
   final logger = Logger();
 
   @override
   void initState() {
     super.initState();
     final deliveryRequestViewModel =
-        Provider.of<DeliveryRequestViewModel>(context, listen: false);
+    Provider.of<DeliveryRequestViewModel>(context, listen: false);
     deliveryRequestViewModel.deliveryRequestPageContext = context;
   }
 
   @override
   Widget build(BuildContext context) {
-    String availavility = Provider.of<SharedUpdater>(context).availabilityState;
+    String availavility = Provider
+        .of<SharedUpdater>(context)
+        .availabilityState;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Listado de encomiendas"),
+
       ),
       body: availavility == Availability.online
           ? StreamBuilder(
-              stream: requestsRef.onValue,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.none) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.black,
-                    ),
-                  );
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.blue,
-                    ),
-                  );
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(snapshot.error.toString()),
-                  );
-                }
-                if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
-                  //Build lists of client requests
-                  final data = snapshot.data!.snapshot.value as Map;
+        stream: requestsRef.onValue,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.none) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.black,
+              ),
+            );
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: Colors.blue,
+              ),
+            );
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+          if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+            //Build lists of client requests
+            final data = snapshot.data!.snapshot.value as Map;
 
-                  List<MapEntry<dynamic, dynamic>> entriesRaw =
-                      data.entries.toList();
-                  List<MapEntry<dynamic, dynamic>> entriesToBuild = [];
-                  //Filter only pending requests
-                  entriesRaw.forEach((element) {
-                    if (element.value['status'] == 'pending') {
-                      entriesToBuild.add(element);
-                    }
-                  });
-                  //If there is no "pending" requests
-                  if (entriesToBuild.isEmpty) {
-                    return const Center(
-                        child: Text("No hay pedidos pendientes.."));
-                  }
-                  //Update delivery request lenght in shared prtovider
+            List<MapEntry<dynamic, dynamic>> entriesRaw =
+            data.entries.toList();
+            List<MapEntry<dynamic, dynamic>> entriesToBuild = [];
+            //Filter only pending requests
+            for (var element in entriesRaw) {
+              if (element.value['status'] == 'pending') {
+                entriesToBuild.add(element);
+              }
+            }
+            //If there is no "pending" requests
+            if (entriesToBuild.isEmpty) {
+              return const Center(
+                  child: Text("No hay pedidos pendientes.."));
+            }
+            //Update delivery request lenght in shared prtovider
 
-                  return ListView.builder(
-                    itemCount: entriesToBuild.length,
-                    itemBuilder: (context, index) {
-                      //Get data raw from firebase
-                      var requestBody = entriesToBuild[index].value;
-                      //get request key
-                      final String requestKey = entriesToBuild[index].key;
-                      //get the Delivery Request model
-                      logger.i("request body: ${entriesToBuild[index].value}");
-                      final deliveryRequestModel =
-                          DeliveryRequestModel.fromMap(requestBody, requestKey);
-                      logger.f(
-                          "Reqeust model: ${deliveryRequestModel.requestType}");
+            return ListView.builder(
+              itemCount: entriesToBuild.length,
+              itemBuilder: (context, index) {
+                //Get data raw from firebase
+                var requestBody = entriesToBuild[index].value;
+                //get request key
+                final String requestKey = entriesToBuild[index].key;
+                //get the Delivery Request model
+                logger.i("request body: ${entriesToBuild[index].value}");
+                final deliveryRequestModel =
+                DeliveryRequestModel.fromMap(requestBody, requestKey);
+                logger.f(
+                    "Reqeust model: ${deliveryRequestModel.requestType}");
 
-                      return DeliveryRequestListTile(
-                          deliveryRequestModel: deliveryRequestModel);
-                    },
-                  );
-                } else {
-                  return const Center(
-                    child: Text("No hay solicitudes pendientes.."),
-                  );
-                }
+                return DeliveryRequestListTile(
+                    deliveryRequestModel: deliveryRequestModel);
               },
-            )
+            );
+          } else {
+            return const Center(
+              child: Text("No hay solicitudes pendientes.."),
+            );
+          }
+        },
+      )
           : _offlineMessage(),
     );
   }
@@ -130,4 +133,8 @@ class _DeliveryRequestPageState extends State<DeliveryRequestPage> {
       ),
     );
   }
+
+  //
+
+
 }

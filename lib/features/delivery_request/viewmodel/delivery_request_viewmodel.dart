@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:driver_app/core/utils/toast_message_util.dart';
 import 'package:driver_app/features/delivery_request/model/delivery_status.dart';
@@ -20,7 +21,9 @@ import 'package:logger/logger.dart';
 import 'package:map_launcher/map_launcher.dart';
 
 class DeliveryRequestViewModel extends ChangeNotifier {
-  final String apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+  final String apiKey = Platform.isAndroid
+      ? dotenv.env['GOOGLE_MAPS_API_KEY_ANDROID'] ?? ''
+      : dotenv.env['GOOGLE_MAPS_API_KEY_IOS'] ?? '';
   final Logger logger = Logger();
   final SharedUtil sharedUtil = SharedUtil();
   bool _loading = true;
@@ -151,6 +154,47 @@ class DeliveryRequestViewModel extends ChangeNotifier {
       logger.e("Error trying to animate camera: $e");
     }
   }
+
+
+
+  //fit markers passed as parameters
+  Future<void> fitMarkersToBounds({
+    required List<LatLng> markers,
+    required GoogleMapController mapController,
+    double padding = 100.0,
+  }) async {
+    if (markers.isEmpty) return;
+
+    try {
+      // Inicializa los límites con el primer marcador
+      double minLat = markers.first.latitude;
+      double maxLat = markers.first.latitude;
+      double minLng = markers.first.longitude;
+      double maxLng = markers.first.longitude;
+
+      // Recorre todos los marcadores para encontrar extremos
+      for (var marker in markers) {
+        if (marker.latitude < minLat) minLat = marker.latitude;
+        if (marker.latitude > maxLat) maxLat = marker.latitude;
+        if (marker.longitude < minLng) minLng = marker.longitude;
+        if (marker.longitude > maxLng) maxLng = marker.longitude;
+      }
+
+      // Define los límites
+      LatLngBounds bounds = LatLngBounds(
+        southwest: LatLng(minLat, minLng),
+        northeast: LatLng(maxLat, maxLng),
+      );
+
+      // Aplica el movimiento de cámara con padding
+      CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, padding);
+      await mapController.animateCamera(cameraUpdate);
+    } catch (e) {
+      print("Error al encajar los marcadores: $e");
+    }
+  }
+
+
 
   //Animate map camera to especic point
   Future<void> animateCameraToLocation(LatLng target) async {
@@ -325,6 +369,13 @@ class DeliveryRequestViewModel extends ChangeNotifier {
     } catch (e) {
       logger.e('Error listening to driver coordinates: $e');
     }
+  }
+
+  //get route
+  Future< RouteInfo?> getRoutePolylines(LatLng driverCoords,LatLng destination)async{
+    RouteInfo? routeInfo = await SharedService.getRoutePolylinePoints(
+        driverCoords, destination, apiKey);
+    return routeInfo;
   }
 
   //LISTENER: to lsiten value changes under 'delivery_requests/passengerId/status'

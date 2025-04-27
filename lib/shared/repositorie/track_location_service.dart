@@ -10,12 +10,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:logger/logger.dart';
 
 StreamSubscription<Position>? _positionStreamSubscription;
 SharedUtil sharedUtil = SharedUtil();
 StreamSubscription<DatabaseEvent>? onPendingRideRequestAdded;
 StreamSubscription<DatabaseEvent>? onDriverInQueueAssigned;
 StreamSubscription<DatabaseEvent>? onDeliveryReqeusted;
+StreamSubscription<DatabaseEvent>? driverStatusListener;
+String backgroundDriverId = 'default';
 
 Future<void> startBackgroundService() async {
   final service = FlutterBackgroundService();
@@ -37,12 +40,18 @@ Future<void> startBackgroundService() async {
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
+  final logger = Logger();
+  logger.f("Inicialianzo Foreground Service");
 
   if (service is AndroidServiceInstance) {
     //FOREGROUND SERVICE
     service.on('setAsForeground').listen((event) async {
       service.setAsForegroundService();
-      //
+      //Show preview of persistence notification
+      await service.setForegroundNotificationInfo(
+        title: "Esperando ubicación...",
+        content: "Conectando con el GPS...",
+      );
       startPendingRequestListener();
       //Start Tracking location
       _positionStreamSubscription?.cancel();
@@ -54,8 +63,13 @@ void onStart(ServiceInstance service) async {
       ).listen((position) async {
         await _updateLocationInFirebase(position);
         await service.setForegroundNotificationInfo(
-          title: "Ubicación actual",
-          content: "${position.latitude},${position.longitude}",
+          title: "Escuchando pedidos",
+          content: "Funcionando en segundo plano",
+        );
+      }, onError: (error) async {
+        await service.setForegroundNotificationInfo(
+          title: "Problema de ubicación",
+          content: "Revisa tu GPS para seguir recibiendo solicitudes",
         );
       });
     });
@@ -65,9 +79,17 @@ void onStart(ServiceInstance service) async {
       service.setAsBackgroundService();
     });
   }
-  service.on('stopService').listen((event) {
+  service.on('stopService').listen((event) async {
+    await (service as AndroidServiceInstance).setForegroundNotificationInfo(
+      title: "Servicio detenido",
+      content: "No estás recibiendo pedidos",
+    );
+    _positionStreamSubscription?.cancel();
     onPendingRideRequestAdded?.cancel();
     onDriverInQueueAssigned?.cancel();
+    onDeliveryReqeusted?.cancel();
+    driverStatusListener?.cancel();
+    await service.setAsBackgroundService();
     service.stopSelf();
   });
 }
@@ -96,6 +118,7 @@ Future<void> _updateLocationInFirebase(
 void startPendingRequestListener() async {
   onDriverInQueueAssigned?.cancel();
   onPendingRideRequestAdded?.cancel();
+  driverStatusListener?.cancel();
   //GEt provider
   //RIDE REQUEST TO A SECTOR
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -113,20 +136,6 @@ void startPendingRequestListener() async {
     }
   });
 
-  //RIDE REQUEST TO THE QUEUE
-  // final uid = FirebaseAuth.instance.currentUser?.uid;
-  // if (uid == null) {
-  //   print("User is not authenticated");
-  //   return;
-  // }
-  // final ref = FirebaseDatabase.instance.ref("drivers/$uid/passenger");
-  // onDriverInQueueAssigned = ref.onValue.listen((event) {
-  //   if (event.snapshot.exists) {
-  //     sharedUtil.playAudioOnce("sounds/pending_ride.mp3");
-  //     sharedUtil.makePhoneVibrate();
-  //   }
-  // });
-
   //DELIVERY REQUEST
   final deliveryRef = FirebaseDatabase.instance.ref('delivery_requests');
   onDeliveryReqeusted = deliveryRef.onChildAdded.listen((event) {
@@ -135,6 +144,22 @@ void startPendingRequestListener() async {
       sharedUtil.makePhoneVibrate();
     }
   });
+
+  // //STATUS LSITENER: To listen trip canceled
+  final driverId = FirebaseAuth.instance.currentUser?.uid;
+  if (driverId != null) {
+    final databaseRefStatus =
+        FirebaseDatabase.instance.ref('drivers/$driverId/status');
+    driverStatusListener = databaseRefStatus.onValue.listen((event) {
+      if (event.snapshot.exists) {
+        final status = event.snapshot.value as String;
+        if (status == DriverRideStatus.canceled) {
+          sharedUtil.playAudioOnce("sounds/ride_canceled.mp3");
+          sharedUtil.makePhoneVibrate();
+        }
+      }
+    });
+  }
 }
 
 //IOS

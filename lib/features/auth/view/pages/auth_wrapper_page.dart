@@ -1,4 +1,4 @@
-import 'package:driver_app/features/auth/view/pages/driver_data_wrapper.dart';
+import 'package:driver_app/features/auth/view/pages/email_verified_wrapper.dart';
 import 'package:driver_app/features/auth/view/pages/sign_in_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +28,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           //El usuario esta autenticado?
           if (snapshot.hasData) {
             logger.i("User us autenticated ");
-            return const DriverDataWrapper();
+            return const EmailVerificationWrapper();
           } else {
             logger.i("User is not authenticated");
             return const SignInPage();

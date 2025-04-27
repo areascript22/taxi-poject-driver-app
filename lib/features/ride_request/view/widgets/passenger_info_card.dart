@@ -14,6 +14,7 @@ import 'package:driver_app/shared/widgets/custom_text_button.dart';
 import 'package:driver_app/shared/widgets/request_type_card.dart';
 import 'package:driver_app/shared/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:provider/provider.dart';
 
@@ -70,14 +71,14 @@ class _PassengerInfoCardState extends State<PassengerInfoCard> {
         //Rest of Passenger info
         Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(15),
               topRight: Radius.circular(15),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
+                color: Colors.grey.withValues(alpha: 0.5),
                 spreadRadius: 5,
                 blurRadius: 7,
                 offset: const Offset(0, 3),
@@ -175,8 +176,11 @@ class _PassengerInfoCardState extends State<PassengerInfoCard> {
                           DriverRideStatus.goingToPickUp)
                         CustomElevatedButton(
                           onTap: () {
+                            //update status
                             rideRequestViewModel
                                 .updateDriverStatus(DriverRideStatus.arrived);
+                            //clean polylines
+                            rideRequestViewModel.polylineFromPickUpToDropOff = const Polyline(polylineId: PolylineId("default"));
                             //send push notification
                             if (rideRequestViewModel.passengerInformation !=
                                 null) {

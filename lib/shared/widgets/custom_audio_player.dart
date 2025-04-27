@@ -151,7 +151,7 @@ class _CustomAudioPlayerState extends State<CustomAudioPlayer> {
                 activeTrackColor: Colors.green,
                 inactiveTrackColor: Colors.white24,
                 thumbColor: Colors.green,
-                overlayColor: Colors.green.withOpacity(0.2),
+                overlayColor: Colors.green.withValues(alpha: 0.2),
                 thumbShape:
                     const RoundSliderThumbShape(enabledThumbRadius: 6.0),
                 trackHeight: 2.0,

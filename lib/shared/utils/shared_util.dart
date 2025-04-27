@@ -44,7 +44,7 @@ class SharedUtil {
   //Play audio
   Future<void> playAudioOnce(String filePath) async {
     bool? response = await Vibration.hasVibrator();
-    if (response != null && response) {
+    if (response) {
       Vibration.vibrate();
     }
     if (filePath.isEmpty) {
@@ -61,7 +61,7 @@ class SharedUtil {
   //Make vibrate
   Future<void> makePhoneVibrate() async {
     bool? response = await Vibration.hasVibrator();
-    if (response != null && response) {
+    if (response) {
       Vibration.vibrate();
     } else {
       logger.e("Vibration is not available.");

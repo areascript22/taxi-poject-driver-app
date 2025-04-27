@@ -36,6 +36,7 @@ class SharedProvider extends ChangeNotifier {
   bool isTherePassengerInTheWay = false;
   String version = '';
   String sector = 'n/a';
+  BitmapDescriptor? taxiIcon;
 
 //  GETTERS
   String get driverRideStatus => _driverRideStatus;

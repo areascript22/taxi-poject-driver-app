@@ -48,7 +48,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
         <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="AIzaSyDm2_br4_go6Tf6QhVczmXnNHwuJYZUZDs"/>
+               android:value="AIzaSyDAMJYuaPz5cRQYk6O9EqB-8RBGcKG9gzQ"/>
 
         <service
             android:name="id.flutter.flutter_background_service.BackgroundService"

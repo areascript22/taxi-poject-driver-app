@@ -1,20 +1,13 @@
 import 'dart:async';
-import 'package:driver_app/features/ride_history/view/widgets/circle_button.dart';
 import 'package:driver_app/features/ride_request/view/widgets/bottom_sheet_cancel_ride.dart';
-import 'package:driver_app/features/ride_request/view/widgets/driver_queue.dart';
 import 'package:driver_app/features/ride_request/view/widgets/passenger_info_card.dart';
-import 'package:driver_app/features/ride_request/view/widgets/second_passenger_tile.dart';
 import 'package:driver_app/features/ride_request/viewmodel/ride_request_viewmodel.dart';
-import 'package:driver_app/shared/models/g_user.dart';
 import 'package:driver_app/shared/providers/shared_provider.dart';
 import 'package:driver_app/shared/widgets/buttons/emergency_button.dart';
 import 'package:driver_app/shared/widgets/coundown_timer.dart';
 import 'package:driver_app/shared/widgets/custom_circular_button.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:logger/logger.dart';
@@ -47,7 +40,7 @@ class _RideMRequestPageState extends State<RideMRequestPage> {
     rideRequestViewModel.listenerToPassengerRequest(sharedProvider);
     rideRequestViewModel.listenToSecondPassangerRequest(sharedProvider);
     rideRequestViewModel.listenToDriverStatus(sharedProvider, context);
-    rideRequestViewModel.loadIcons();
+    rideRequestViewModel.loadIcons(sharedProvider);
     rideRequestViewModel.listenToAllDriversPositions();
   }
 
@@ -108,28 +101,30 @@ class _RideMRequestPageState extends State<RideMRequestPage> {
         alignment: AlignmentDirectional.center,
         children: [
           //Map
-          GoogleMap(
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            mapToolbarEnabled: false,
-            zoomControlsEnabled: false,
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(-1.648920, -78.677108),
-              zoom: 14,
+          Positioned.fill(
+            child: GoogleMap(
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              mapToolbarEnabled: false,
+              zoomControlsEnabled: false,
+              initialCameraPosition: const CameraPosition(
+                target: LatLng(-1.648920, -78.677108),
+                zoom: 14,
+              ),
+              markers: {
+                ...rideRequestViewModel.markers,
+                rideRequestViewModel.taxiMarker ??
+                    const Marker(markerId: MarkerId("test")),
+                ...rideRequestViewModel.driversMarkers.values.toSet(),
+              },
+              polylines: {rideRequestViewModel.polylineFromPickUpToDropOff},
+              onMapCreated: (controller) {
+                rideRequestViewModel.onMapCreated(controller);
+                if (!rideRequestViewModel.mapController.isCompleted) {
+                  updateMapStyle();
+                }
+              },
             ),
-            markers: {
-              ...rideRequestViewModel.markers,
-              rideRequestViewModel.taxiMarker ??
-                  const Marker(markerId: MarkerId("test")),
-              ...rideRequestViewModel.driversMarkers.values.toSet(),
-            },
-            polylines: {rideRequestViewModel.polylineFromPickUpToDropOff},
-            onMapCreated: (controller) {
-              rideRequestViewModel.onMapCreated(controller);
-              if (!rideRequestViewModel.mapController.isCompleted) {
-                updateMapStyle();
-              }
-            },
           ),
 
           //BUTTON: Menu
@@ -272,22 +267,22 @@ class _RideMRequestPageState extends State<RideMRequestPage> {
   }
 
   //
-  Future<void> checkPermissionAndShowOverlay() async {
-    bool isGranted = await FlutterOverlayWindow.isPermissionGranted();
-    if (!isGranted) {
-      await FlutterOverlayWindow.requestPermission();
-    }
+  // Future<void> checkPermissionAndShowOverlay() async {
+  //   bool isGranted = await FlutterOverlayWindow.isPermissionGranted();
+  //   if (!isGranted) {
+  //     await FlutterOverlayWindow.requestPermission();
+  //   }
 
-    if (await FlutterOverlayWindow.isPermissionGranted()) {
-      await FlutterOverlayWindow.showOverlay(
-        height: 200,
-        width: 200,
-        enableDrag: true,
-        overlayTitle: "Burbuja Flotante",
-        overlayContent: "Mi burbuja aparece sobre otras apps",
-      );
-    } else {
-      print("Permiso de superposición denegado.");
-    }
-  }
+  //   if (await FlutterOverlayWindow.isPermissionGranted()) {
+  //     await FlutterOverlayWindow.showOverlay(
+  //       height: 200,
+  //       width: 200,
+  //       enableDrag: true,
+  //       overlayTitle: "Burbuja Flotante",
+  //       overlayContent: "Mi burbuja aparece sobre otras apps",
+  //     );
+  //   } else {
+  //     print("Permiso de superposición denegado.");
+  //   }
+  // }
 }

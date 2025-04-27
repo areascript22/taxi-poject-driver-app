@@ -1,6 +1,5 @@
 import 'package:driver_app/features/delivery_request/view/pages/delivery_page_wrapper.dart';
 import 'package:driver_app/features/home/view/widgets/custom_drawer.dart';
-import 'package:driver_app/features/home/view/widgets/custom_elevated_button.dart';
 import 'package:driver_app/features/home/view/widgets/services_issues_alert.dart';
 import 'package:driver_app/features/pending_ride_request/view/pages/pending_ride_request_page.dart';
 import 'package:driver_app/features/ride_request/view/pages/ride_request_page.dart';
@@ -10,9 +9,7 @@ import 'package:driver_app/features/home/view/widgets/custom_toggle_button.dart'
 import 'package:driver_app/shared/providers/shared_updater.dart';
 import 'package:driver_app/shared/repositorie/push_notification_service.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +45,7 @@ class _DriverAppState extends State<DriverApp> with WidgetsBindingObserver {
         FirebaseDatabase.instance.ref('delivery_requests'), sharedProvider);
     homeViewModel.listenToPendingRideRequests(
         FirebaseDatabase.instance.ref('driver_requests'), sharedProvider);
-    homeViewModel.listenToRequestAssigned();
+    homeViewModel.listenToRequestAssigned(sharedProvider);
     bool gpsPermissions =
         await homeViewModel.checkGpsPermissions(sharedProvider);
     homeViewModel.listenToLocationServicesAtSystemLevel();

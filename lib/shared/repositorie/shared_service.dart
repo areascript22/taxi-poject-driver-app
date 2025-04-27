@@ -30,9 +30,9 @@ class SharedService {
             )
             .timeout(const Duration(seconds: 10));
         if (result.points.isNotEmpty) {
-          result.points.forEach((PointLatLng point) {
+          for (var point in result.points) {
             routePoints.add(LatLng(point.latitude, point.longitude));
-          });
+          }
         }
         logger.i(
             "Result getting route: ${result.durationTexts} type: ${result.durationTexts![0]}");

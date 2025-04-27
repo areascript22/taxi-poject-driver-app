@@ -1,11 +1,11 @@
-import 'package:driver_app/core/utils/dialog/dialog_util.dart';
-import 'package:driver_app/features/home/viewmodel/home_view_model.dart';
+//import 'package:driver_app/features/home/viewmodel/home_view_model.dart';
 import 'package:driver_app/features/ride_history/view/pages/ride_history_page.dart';
 import 'package:driver_app/features/settings/view/pages/settings_page.dart';
 import 'package:driver_app/features/technical_support/view/pages/technical_support.dart';
+import 'package:driver_app/features/termns_and_conditions/view/pages/privacy_policy.dart';
+import 'package:driver_app/features/termns_and_conditions/view/pages/termns_and_conditions_page.dart';
 import 'package:driver_app/shared/providers/shared_provider.dart';
 import 'package:driver_app/shared/widgets/user_avatar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:provider/provider.dart';
@@ -16,9 +16,9 @@ class CustomDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sharedProvider = Provider.of<SharedProvider>(context);
-    final homeViewModel = Provider.of<HomeViewModel>(context);
+   // final homeViewModel = Provider.of<HomeViewModel>(context);
     return Drawer(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
@@ -114,6 +114,39 @@ class CustomDrawer extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const TechnicalSupportContent(),
+                      ),
+                    );
+                  },
+                ),
+                //Termns and conditions
+                ListTile(
+                  leading: const Icon(Icons.privacy_tip),
+                  title: const Text(
+                    "Términos y condiciónes",
+                    style: TextStyle(fontSize: 17),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TermnsAndConditionsPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                //Politicas de privacidad
+                ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: const Text(
+                    "Políticas de privacidad",
+                    style: TextStyle(fontSize: 17),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>  const  PrivacyPolicyPage(),
                       ),
                     );
                   },

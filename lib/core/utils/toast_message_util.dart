@@ -26,7 +26,7 @@ class ToastMessageUtil {
             child: Text(
               message,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 fontSize: 16.0,
               ),
             ),

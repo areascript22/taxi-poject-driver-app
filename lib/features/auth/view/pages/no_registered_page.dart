@@ -1,19 +1,37 @@
+
+import 'package:driver_app/features/auth/viewmodel/auth_viewmodel.dart';
+import 'package:driver_app/features/ride_history/view/widgets/custom_devider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class NotRegisteredPage extends StatelessWidget {
-  const NotRegisteredPage({super.key});
+class NotRegisteredPage extends StatefulWidget {
+  final Function onUpdate;
+
+  const NotRegisteredPage({
+    super.key,
+    required this.onUpdate,
+  });
+
+  @override
+  State<NotRegisteredPage> createState() => _NotRegisteredPageState();
+}
+
+class _NotRegisteredPageState extends State<NotRegisteredPage> {
   @override
   Widget build(BuildContext context) {
+    final authViewModel = Provider.of<AuthViewModel>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Acceso Denegado'),
+        title: const Text('Solicitud en revisión'),
         centerTitle: true,
         leading: IconButton(
           onPressed: () async {
             await FirebaseAuth.instance.signOut();
           },
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(
+            Icons.arrow_back,
+          ),
         ),
       ),
       body: Center(
@@ -30,7 +48,7 @@ class NotRegisteredPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               const Text(
-                'No estás registrado como conductor.',
+                'Su solicitud esta siendo revisada por administración',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20,
@@ -39,27 +57,39 @@ class NotRegisteredPage extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Ponte en contacto con el administrador para obtener acceso.',
+                'Una vez que su solicitud sea aprobada se le redirigirá automáticamente al panel principal',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[700],
                 ),
               ),
+              //Refresh
+
+              //
               const SizedBox(height: 30),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Define the action, e.g., navigating to a contact page
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Contactando al administrador...'),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.contact_mail),
-                label: const Text('Contactar al Administrador'),
-              ),
-              const SizedBox(height: 20),
+              const CustomDevider(),
+              // Text(
+              //   'Si desea crear otra cuenta e iniciar el proceso de nuevo, presione',
+              //   textAlign: TextAlign.center,
+              //   style: TextStyle(
+              //     fontSize: 16,
+              //     color: Colors.grey[700],
+              //   ),
+              // ),
+              // ElevatedButton.icon(
+              //   onPressed: !authViewModel.loading
+              //       ? () async {
+              //           // Define the action, e.g., navigating to a contact page
+              //           await authViewModel.cancelAccountRequest(context);
+              //         }
+              //       : () {},
+              //   icon: !authViewModel.loading
+              //       ? const Icon(Icons.contact_mail)
+              //       : const CircularProgressIndicator(),
+              //   label: const Text('Cancelar solicitud'),
+              // ),
+              // const SizedBox(height: 20),
             ],
           ),
         ),

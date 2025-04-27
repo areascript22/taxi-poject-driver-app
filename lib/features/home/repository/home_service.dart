@@ -22,7 +22,6 @@ class HomeService {
     }
     try {
       //get current location
-
       GUser driver = sharedProvider.driver!;
       // Get the authenticated driver's ID
       String? driverId = FirebaseAuth.instance.currentUser!.uid;
@@ -164,8 +163,6 @@ class HomeService {
       logger.e("Error updating device token: $e");
     }
   }
-
-
 
   //Cancel emergency notifications in DB
   static Future<bool> cancelEmergencyNotification() async {

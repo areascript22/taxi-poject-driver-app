@@ -1,6 +1,6 @@
 class Succes {
   int code;
-  Object response;
+  String response;
 
   Succes({
     required this.code,
@@ -11,7 +11,7 @@ class Succes {
 
 class Failure {
   int code;
-  Object errorResponse;
+  String errorResponse;
 
   Failure({
     required this.code,

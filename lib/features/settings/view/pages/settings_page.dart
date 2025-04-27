@@ -18,12 +18,12 @@ class SettingsPage extends StatelessWidget {
     final logger = Logger();
     final sharedProvider = Provider.of<SharedProvider>(context, listen: false);
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
             boxShadow: [
               BoxShadow(
                 color: Theme.of(context)

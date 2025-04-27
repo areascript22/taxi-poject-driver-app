@@ -1,4 +1,5 @@
 import 'package:driver_app/core/utils/toast_message_util.dart';
+import 'package:driver_app/features/delivery_request/view/widgets/preview_delivery_info.dart';
 import 'package:driver_app/features/delivery_request/viewmodel/delivery_request_viewmodel.dart';
 import 'package:driver_app/shared/models/delivery_request_model.dart';
 import 'package:driver_app/shared/models/g_user.dart';
@@ -32,13 +33,15 @@ class DeliveryRequestListTile extends StatelessWidget {
               context);
           return;
         }
-        //Update Delivery request model in provider
-        deliveryRequestViewModel.deliveryRequestModel = deliveryRequestModel;
-        //    sharedProvider.passengerInformation = deliveryRequestModel.information;
-        //Write driver data in realtime database
-        await deliveryRequestViewModel.writeDriverDataUnderDeliveryRequest(
-            sharedProvider, context);
-        //Navigate to map page, display info and start navigating
+        //Dialog
+        showDeliveryPreviewDialog(context, deliveryRequestModel);
+        // //Update Delivery request model in provider
+        // deliveryRequestViewModel.deliveryRequestModel = deliveryRequestModel;
+        // //    sharedProvider.passengerInformation = deliveryRequestModel.information;
+        // //Write driver data in realtime database
+        // await deliveryRequestViewModel.writeDriverDataUnderDeliveryRequest(
+        //     sharedProvider, context);
+        // //Navigate to map page, display info and start navigating
       },
       child: Padding(
         padding: const EdgeInsets.all(8.0),

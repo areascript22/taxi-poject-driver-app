@@ -14,7 +14,7 @@ class ColorizedText extends StatelessWidget {
             textStyle: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.background),
+                color: Theme.of(context).colorScheme.surface),
             colors: [
               Theme.of(context).colorScheme.primary,
               Theme.of(context).colorScheme.inversePrimary,

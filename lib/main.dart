@@ -22,6 +22,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await startBackgroundService();
   LocalStorageService.setupHive();
+
   runApp(
     MultiProvider(
       providers: [

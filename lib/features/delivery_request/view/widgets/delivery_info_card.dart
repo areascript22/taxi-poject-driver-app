@@ -25,13 +25,13 @@ class _DeliveryInfoCardState extends State<DeliveryInfoCard> {
         Provider.of<DeliveryRequestViewModel>(context);
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.background,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.all(
           Radius.circular(15),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.grey.withValues(alpha:0.5),
             spreadRadius: 5,
             blurRadius: 7,
             offset: const Offset(0, 3),

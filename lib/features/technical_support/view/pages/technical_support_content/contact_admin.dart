@@ -14,9 +14,9 @@ class ContactAdmin extends StatefulWidget {
 }
 
 class _ContactAdminState extends State<ContactAdmin> {
-  TextEditingController _messageController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  String _selectedQueryType = 'Problema técnico';
+  final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+ // final String _selectedQueryType = 'Problema técnico';
   final sharedUtil = SharedUtil();
 
   void _sendMessage() {
@@ -77,7 +77,7 @@ class _ContactAdminState extends State<ContactAdmin> {
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
             boxShadow: [
               BoxShadow(
                 color: Theme.of(context)

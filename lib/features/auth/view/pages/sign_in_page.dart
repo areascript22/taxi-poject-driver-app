@@ -1,5 +1,5 @@
-import 'package:driver_app/features/auth/view/pages/create_account_page.dart';
 import 'package:driver_app/features/auth/view/pages/password_recovery_page.dart';
+import 'package:driver_app/features/auth/view/pages/sign_up_page.dart';
 import 'package:driver_app/features/auth/view/widgets/custom_text_field.dart';
 import 'package:driver_app/features/auth/view/widgets/password_textfield.dart';
 import 'package:driver_app/features/auth/viewmodel/auth_viewmodel.dart';
@@ -153,7 +153,7 @@ class _SignInPageState extends State<SignInPage> {
                                   ),
                                 ],
                               ),
-                              CustomDevider(),
+                              const CustomDevider(),
                               const SizedBox(height: 15),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -163,8 +163,7 @@ class _SignInPageState extends State<SignInPage> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              const CreateAccountPage(),
+                                          builder: (context) => const SignUpPage()
                                         ),
                                       );  
                                     },

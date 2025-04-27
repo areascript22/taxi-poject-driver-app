@@ -18,13 +18,13 @@ class _TechnicalSupportContentState extends State<TechnicalSupportContent> {
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
             boxShadow: [
               BoxShadow(
                 color: Theme.of(context)
                     .colorScheme
                     .inversePrimary
-                    .withOpacity(0.2),
+                    .withValues(alpha: 0.2),
                 blurRadius: 1,
                 offset: const Offset(0, 5), // creates the soft blur effect
               ),

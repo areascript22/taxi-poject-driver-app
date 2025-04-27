@@ -1,12 +1,9 @@
 import 'dart:io';
 import 'package:driver_app/core/utils/toast_message_util.dart';
 import 'package:driver_app/features/auth/view/widgets/custom_text_field.dart';
-import 'package:driver_app/features/auth/view/widgets/password_textfield.dart';
 import 'package:driver_app/features/auth/view/widgets/phone_number_textfield.dart';
 import 'package:driver_app/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:driver_app/features/home/view/widgets/custom_elevated_button.dart';
-import 'package:driver_app/shared/models/g_user.dart';
-import 'package:driver_app/shared/models/ratings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
@@ -33,7 +30,16 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   Widget build(BuildContext context) {
     final authViewModel = Provider.of<AuthViewModel>(context);
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+          },
+          icon: const Icon(
+            Icons.arrow_back,
+          ),
+        ),
+      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(15.0),
         child: CustomElevatedButton(
@@ -51,11 +57,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               //createa GUser instance
               logger.f("testing button createa account");
               // Procesar creación de cuenta
-              await authViewModel.createAccount(context);
+              await authViewModel.createAccount(context, _imageFile!);
             }
           },
           child: !authViewModel.loading
-              ? const Text("Crear cuenta")
+              ? const Text("Guardar datos")
               : const CircularProgressIndicator(),
         ),
       ),
@@ -90,7 +96,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                               ],
                             ),
                             child: CircleAvatar(
-                              radius: 50,
+                              radius: 90,
                               backgroundColor: Colors.purple,
                               backgroundImage: _imageFile != null
                                   ? FileImage(_imageFile!)
@@ -146,28 +152,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                           ],
                         ),
                         const SizedBox(height: 10),
-                        CustomTextField(
-                          hintText: "Correo electrónico",
-                          textEditingController: authViewModel.emailController,
-                          validator: (value) {
-                            value = value?.trim();
-
-                            //call TRIM all
-                            //valdiate all
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, ingrese su correo electrónico'; // Required validation
-                            }
-                            // Email format validation
-                            const emailPattern =
-                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-                            final emailRegex = RegExp(emailPattern);
-                            if (!emailRegex.hasMatch(value)) {
-                              return 'Por favor, ingrese un correo electrónico válido';
-                            }
-                            return null; // Return null if validation passes
-                          },
-                        ),
-                        const SizedBox(height: 10),
                         PhoneNumberField(
                           textController: authViewModel.phoneController,
                           validator: (value) {
@@ -214,24 +198,6 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                               ? 'Por favor, ingrese la placa'
                               : null,
                         ),
-                        const SizedBox(height: 10),
-                        PasswordTextfield(
-                          hintText: "Contraseña",
-                          textEditingController:
-                              authViewModel.passwordController,
-                          validator: (p0) => p0 == null || p0.isEmpty
-                              ? 'Por favor ingresa una contraseña'
-                              : null,
-                        ),
-                        const SizedBox(height: 10),
-                        PasswordTextfield(
-                          hintText: "Repetir la contraseña",
-                          textEditingController:
-                              authViewModel.passwordConfirmController,
-                          validator: (p0) => p0 == null || p0.isEmpty
-                              ? 'Por favor ingresa una contraseña'
-                              : null,
-                        ),
                         const SizedBox(height: 80),
                       ],
                     ),
@@ -248,7 +214,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
 //
   void _showImagePickerSheet(BuildContext context) {
     showModalBottomSheet(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       context: context,
       builder: (BuildContext context) {
         return Column(

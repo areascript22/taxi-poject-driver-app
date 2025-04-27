@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:driver_app/features/ride_history/repository/ride_history_service.dart';
 import 'package:driver_app/shared/models/passenger_model.dart';
 import 'package:driver_app/shared/models/route_info.dart';
@@ -10,7 +11,9 @@ import 'package:logger/logger.dart';
 
 class RideHistoryViewmodel extends ChangeNotifier {
   final logger = Logger();
-  final String apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+  final String apiKey = Platform.isAndroid
+      ? dotenv.env['GOOGLE_MAPS_API_KEY_ANDROID'] ?? ''
+      : dotenv.env['GOOGLE_MAPS_API_KEY_IOS'] ?? '';
   Completer<GoogleMapController> mapController1 = Completer();
   Polyline _polylineFromPickUpToDropOff =
       const Polyline(polylineId: PolylineId("default"));

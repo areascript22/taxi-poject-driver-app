@@ -37,7 +37,7 @@ class PendingRideRequestViewModel extends ChangeNotifier {
       return;
     }
     bool response = await PendingRideRequestService.addDriverToRideRequest(
-        passengerId, driverId, context);
+        passengerId, driverId, context); 
 
     if (response) {
       //Pending
