@@ -11,9 +11,9 @@ class Ratings {
 
   factory Ratings.fromMap(Map<String, dynamic> map) {
     return Ratings(
-      rating: map['rating'].toDouble(),
-      ratingCount: map['ratingCount'],
-      totalRatingScore: map['totalRatingScore'].toDouble(),
+      rating: map['rating'] != null ? map['rating'].toDouble() : 0,
+      ratingCount: map['ratingCount'] ?? 0,
+      totalRatingScore: map['totalRatingScore']?.toDouble() ?? 0,
     );
   }
 

@@ -31,11 +31,11 @@ class PendingRideRequestViewModel extends ChangeNotifier {
       logger.e("Driver is not authenticated.");
       return;
     }
-    if (sharedProvider.secondPassenger != null) {
-      ToastMessageUtil.showToast(
-          "Ya tiene una carrera pendiente en camino.", context);
-      return;
-    }
+    // if (sharedProvider.secondPassenger != null) {
+    //   ToastMessageUtil.showToast(
+    //       "Ya tiene una carrera pendiente en camino.", context);
+    //   return;
+    // }
     bool response = await PendingRideRequestService.addDriverToRideRequest(
         passengerId, driverId, context); 
 
@@ -43,7 +43,7 @@ class PendingRideRequestViewModel extends ChangeNotifier {
       //Pending
 //      sharedProvider.isTherePassengerInTheWay = true;
       homeViewModel.currentPageIndex = 0;
-      await PendingRideRequestService.removeRideRequest(passengerId);
+    //  await PendingRideRequestService.removeRideRequest(passengerId);
     } else {
       if (context.mounted) {
         ToastMessageUtil.showToast("Peticion expirada", context);

@@ -61,18 +61,18 @@ class _CustomToggleButtonState extends State<CustomToggleButton> {
 
   void toggle(HomeViewModel homeViewModel, SharedProvider sharedProvider,
       SharedUpdater sharedUpdater) async {
-    if (sharedProvider.driverRideStatus != DriverRideStatus.pending) {
-      ToastMessageUtil.showToast(
-          "Termina la carrera para poder salir de línea", context);
-      return;
-    }
+    // if (sharedProvider.driverRideStatus != DriverRideStatus.pending) {
+    //   ToastMessageUtil.showToast(
+    //       "Termina la carrera para poder salir de línea", context);
+    //   return;
+    // }
     if (isOnline) {
       //STOP FOREGROUND SERVICES
       final bool response = await sharedProvider.goOnlineOrOffline(
-          Availability.offline,
-          sharedProvider.driverRideStatus,
-          sharedProvider);
-
+        Availability.offline,
+        sharedProvider.driverRideStatus,
+        sharedProvider,
+      );
       if (response) {
         sharedProvider.availavilityState = Availability.offline;
         // sharedProvider.availavilityCheck = Availability.offline;

@@ -68,6 +68,9 @@ class _PendingRideRequestPageState extends State<PendingRideRequestPage> {
                   //Filter only pending requests
                   for (var element in entriesRaw) {
                     // if (element.value['status'] == 'pending') {
+                    if (element.value['driver'] != null) {
+                      continue;
+                    }
                     entriesToBuild.add(element);
                     //  }
                   }
@@ -96,9 +99,9 @@ class _PendingRideRequestPageState extends State<PendingRideRequestPage> {
                       final String requestKey = entriesToBuild[index].key;
                       //get the Delivery Request model
 
-                      final deliveryRequestModel =
-                          PendingRequestModel.fromJson(requestBody, requestKey); //Inally
-                
+                      final deliveryRequestModel = PendingRequestModel.fromJson(
+                          requestBody, requestKey); //Inally
+
                       return PendingRequestListTile(
                           pendingRideRequestModel: deliveryRequestModel);
                     },

@@ -1,4 +1,5 @@
 import 'package:driver_app/core/theme/theme.dart';
+import 'package:driver_app/features/admin/viewmodel/admin_viewmodel.dart';
 import 'package:driver_app/features/auth/view/pages/splash_screen.dart';
 import 'package:driver_app/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:driver_app/features/delivery_request/viewmodel/delivery_request_viewmodel.dart';
@@ -28,33 +29,22 @@ void main() async {
       providers: [
         //TODO : Modify the scope of each porvider
         ChangeNotifierProvider(
-          create: (context) => SharedProvider(),
+          create: (_) => SharedProvider()
         ),
-        ChangeNotifierProvider(create: (context) => SharedUpdater()),
-        ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        ChangeNotifierProvider(
-          create: (context) => HomeViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => RideRequestViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => DeliveryRequestViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => PendingRideRequestViewModel(),
-        ),
+        ChangeNotifierProvider(create: (_) => SharedUpdater()),
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => HomeViewModel()),
+        ChangeNotifierProvider(create: (_) => RideRequestViewModel()),
+        ChangeNotifierProvider(create: (_) => DeliveryRequestViewModel()),
+        ChangeNotifierProvider(create: (_) => PendingRideRequestViewModel()),
+        ChangeNotifierProvider(create: (_) => AdminViewModel())
       ],
       child: const MyApp(),
-
     ),
   );
 }
 
 //
-
-//
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

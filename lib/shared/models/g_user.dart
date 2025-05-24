@@ -89,6 +89,70 @@ class GUser {
       'deviceToken': deviceToken,
     };
   }
+
+  //get highest role
+  String getHighestRole() {
+    final roles = role;
+    if (roles.isEmpty) return '';
+    if (roles.length == 1) return roles.first;
+
+    const hierarchy = [
+      Roles.superUser,
+      Roles.admin,
+      Roles.driver,
+      Roles.passenger,
+    ];
+
+    for (var role in hierarchy) {
+      if (roles.contains(role)) {
+        return role;
+      }
+    }
+
+    return 'Desconocido'; // por si no coincide con nada
+  }
+
+  //Can I Manage another user
+  bool canManageUser(GUser target) {
+    //If I am trying to manage my own access data
+    if (id == target.id) {
+      return false;
+    }
+
+    List<String> currentUserRoles = role;
+    if (currentUserRoles.contains(Roles.superUser)) {
+      return true; // superUser can manage anyone
+    }
+
+    if (currentUserRoles.contains(Roles.admin)) {
+      // Admin can't manage other admins or superUsers
+      return !target.role
+          .any((role) => role == Roles.admin || role == Roles.superUser);
+    }
+
+    // Drivers/passengers can't manage anyone
+    return false;
+  }
+
+  /// Actualiza los campos con base en el mapa recibido
+  GUser copyWithMap(Map<String, dynamic> data) {
+    return GUser(
+      id: id,
+      name: data['name'] ?? name,
+      lastName: data['lastName'] ?? lastName,
+      email: data['email'] ?? email,
+      phone: data['phone'] ?? phone,
+      profilePicture: data['profilePicture'] ?? profilePicture,
+      ratings:
+          data['ratings'] != null ? Ratings.fromMap(data['ratings']) : ratings,
+      role: data['role'] != null ? List<String>.from(data['role']) : role,
+      vehicle: data['vehicle'] != null
+          ? vehicle!.copyWithMap(data['vehicle'])
+          : vehicle,
+      access: data['access'] ?? access,
+      deviceToken: data['deviceToken'] ?? deviceToken,
+    );
+  }
 }
 
 class Vehicle {
@@ -123,5 +187,16 @@ class Vehicle {
       'model': model,
       'license': license,
     };
+  }
+
+  //copyWithMap
+  Vehicle copyWithMap(Map<String, dynamic> data) {
+    return Vehicle(
+      carRegistrationNumber:
+          data['carRegistrationNumber'] ?? carRegistrationNumber,
+      taxiCode: data['taxiCode'] ?? taxiCode,
+      model: data['model'] ?? model,
+      license: data['license'] ?? license,
+    );
   }
 }

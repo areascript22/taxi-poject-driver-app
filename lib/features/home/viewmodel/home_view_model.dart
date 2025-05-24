@@ -144,12 +144,15 @@ class HomeViewModel extends ChangeNotifier {
       requestAssignedListener = ref.onChildAdded.listen((event) async {
         //get driver id
         final tempDriverId = event.snapshot.key as String;
-        logger.f("value to notify all: $tempDriverId }");
+        final tempValues = event.snapshot.value as Map;
 
-        if (tempDriverId != driverId && sharedProvider.availavilityState==Availability.online) {
+        logger.f("value to notify all: ${tempValues} }");
+
+        if (tempDriverId != driverId &&
+            sharedProvider.availavilityState == Availability.online) {
           await sharedUtil.playAudioOnce('sounds/new_assigned_ride.mp3');
           await LocalNotificationService.showNotification(
-              title: 'Una carrera ha sido asignada');
+              title: '${tempValues['taxiCode']} aplicó a una carrera');
         }
       });
     } catch (e) {
@@ -244,7 +247,7 @@ class HomeViewModel extends ChangeNotifier {
   void listenToDeliveryRequests(
       DatabaseReference requestsRef, SharedProvider sharedProvider) {
     try {
-    //  final SharedUtil sharedUtil = SharedUtil();
+      //  final SharedUtil sharedUtil = SharedUtil();
       deliveryRequestLitener = requestsRef.onValue.listen((event) {
         final data = event.snapshot.value as Map?;
         if (data != null) {
@@ -287,6 +290,8 @@ class HomeViewModel extends ChangeNotifier {
           if (sharedProvider.availavilityState == Availability.offline) {
             return;
           }
+
+          //Add number
           pendingRequestLength = entries.length;
         } else {
           tempPendingRequestLenght = 0;

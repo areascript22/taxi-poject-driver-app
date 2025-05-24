@@ -220,13 +220,24 @@ class _RideMRequestPageState extends State<RideMRequestPage> {
                 icon: const Icon(Icons.navigation_rounded),
               ),
             ),
+
+          //BUTTON: align map to the north side
+          // if (rideRequestViewModel.passengerInformation == null)
+          //   Positioned(
+          //     top: 5,
+          //     right: 80,
+          //     child: CustomCircularButton(
+          //       onPressed: () async {
+          //         //align map
+          //         await rideRequestViewModel.alignMapToNorth();
+          //       },
+          //       icon: const Icon(Ionicons.compass_outline),
+          //     ),
+          //   ),
+
           //Emergency button
           if (rideRequestViewModel.passengerInformation == null)
-            const Positioned(
-              bottom: 20,
-              right: 20,
-              child: EmergencyButton() 
-            ),
+            const Positioned(bottom: 20, right: 20, child: EmergencyButton()),
 
           const Positioned(
             bottom: 0,

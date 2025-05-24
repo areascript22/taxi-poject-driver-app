@@ -173,11 +173,11 @@ class RideRequestViewModel extends ChangeNotifier {
             continue;
           }
           final driverData = entry.value as Map;
-          final location = driverData['location'];
-          final driverInfo = driverData['information'];
-          final taxiCode = driverInfo['taxiCode'];
-          final driverName = driverInfo['name'];
-          final vehicleModel = driverInfo['vehicleModel'];
+          final location = driverData['location'] ?? '';
+          final driverInfo = driverData['information'] ?? '';
+          final taxiCode = driverInfo['taxiCode'] ?? '';
+          final driverName = driverInfo['name'] ?? '';
+          final vehicleModel = driverInfo['vehicleModel'] ?? '';
           final lat = double.tryParse(location['latitude'].toString());
           final lng = double.tryParse(location['longitude'].toString());
           if (lat != null && lng != null) {
@@ -275,6 +275,25 @@ class RideRequestViewModel extends ChangeNotifier {
     } catch (e) {
       logger.e("Error trying to animate camera: $e");
     }
+  }
+
+//Align map rotation to the north side
+  Future<void> alignMapToNorth() async {
+    GoogleMapController controller = await mapController.future;
+    if (driverCurrenPosition == null) {
+      return;
+    }
+    await controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target:
+              driverCurrenPosition!, // Replace with your current camera target
+          zoom: 15, // Optional: set your current zoom level
+          bearing: 0.0, // This sets the direction to North
+          tilt: 0.0, // Optional: reset tilt if needed
+        ),
+      ),
+    );
   }
 
   //Show all maps installed on the device to Navigate
@@ -481,7 +500,8 @@ class RideRequestViewModel extends ChangeNotifier {
             fitMarkers(sharedProvider);
 
             //NOtify all driver by writing our UId under assignedRequests
-            await RideRequestService.notifyAllDrivers(driverId);
+            await RideRequestService.notifyAllDrivers(
+                driverId, sharedProvider.driver?.vehicle?.taxiCode ?? '.');
           } catch (e) {
             logger.e("Error trying ti get data : $e");
             passengerInformation = null;
@@ -554,7 +574,6 @@ class RideRequestViewModel extends ChangeNotifier {
       logger.e("User not atuthenticated");
       return;
     }
-   
 
     final databaseRefStatus =
         FirebaseDatabase.instance.ref('drivers/$driverId/status');
@@ -675,6 +694,8 @@ class RideRequestViewModel extends ChangeNotifier {
             case DriverRideStatus.canceled:
               driverRideStatus = DriverRideStatus.canceled;
               sharedProvider.driverRideStatus = DriverRideStatus.canceled;
+              //save ride history
+              await _saveRideHistory(sharedProvider);
               passengerInformation = null;
               routeDuration = null;
               await RideRequestService.removePassengerInfo();

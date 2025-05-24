@@ -27,7 +27,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
           //El usuario esta autenticado?
           if (snapshot.hasData) {
-            logger.i("User us autenticated ");
+            logger.i("User is autenticated : ${snapshot.data}");
             return const EmailVerificationWrapper();
           } else {
             logger.i("User is not authenticated");

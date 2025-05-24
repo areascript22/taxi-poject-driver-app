@@ -187,13 +187,14 @@ class RideRequestService {
   }
 
   //NOtify all drivers
-  static Future<void> notifyAllDrivers(String driverId) async {
+  static Future<void> notifyAllDrivers(String driverId, String taxiCode) async {
     final logger = Logger();
     final DatabaseReference database = FirebaseDatabase.instance.ref();
     try {
-      await database
-          .child('assignedRequests/$driverId')
-          .update({'timestamp': ServerValue.timestamp});
+      await database.child('assignedRequests/$driverId').update({
+        'taxiCode': taxiCode,
+        'timestamp': ServerValue.timestamp,
+      });
       await FirebaseDatabase.instance
           .ref('assignedRequests/$driverId')
           .remove();

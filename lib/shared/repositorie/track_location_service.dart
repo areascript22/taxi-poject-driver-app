@@ -126,7 +126,9 @@ void startPendingRequestListener() async {
   onPendingRideRequestAdded = requestsRef.onChildAdded.listen((event) {
     final value = event.snapshot.value as Map;
     final sector = value['sector'];
+    //Play audio only if driver has no trips in progress
     if (SharedProvider.driverRideStatusS == DriverRideStatus.pending) {
+  
       if (sector != null) {
         sharedUtil.speakSectorName('Carrera al sector ${sector!}');
       } else {

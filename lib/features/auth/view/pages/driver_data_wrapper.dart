@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,17 +33,16 @@ class _DriverDataWrapperState extends State<DriverDataWrapper> {
     listenToAccess();
   }
 
-
   //Listener
   void listenToAccess() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
-    listenerAccess= FirebaseFirestore.instance
+    listenerAccess = FirebaseFirestore.instance
         .collection('g_user')
         .doc(uid)
         .snapshots()
-        .listen((DocumentSnapshot snapshot) async{
+        .listen((DocumentSnapshot snapshot) async {
       if (snapshot.exists) {
         final access = snapshot.get('access');
         print('Access actualizado: $access');
@@ -52,9 +50,7 @@ class _DriverDataWrapperState extends State<DriverDataWrapper> {
         if (access == Access.granted) {
           // Go to home page
 
-        setState(() {
-
-        });
+          setState(() {});
         }
       } else {
         print('Documento no existe');
@@ -69,6 +65,7 @@ class _DriverDataWrapperState extends State<DriverDataWrapper> {
     super.dispose();
     listenerAccess?.cancel();
   }
+
   @override
   Widget build(BuildContext context) {
     final Logger logger = Logger();
@@ -90,7 +87,9 @@ class _DriverDataWrapperState extends State<DriverDataWrapper> {
           // Show a loading spinner while waiting for the data
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(color: Colors.green,),
+              child: CircularProgressIndicator(
+                color: Colors.green,
+              ),
             ),
           );
         } else if (snapshot.hasData && snapshot.data != null) {
@@ -99,17 +98,17 @@ class _DriverDataWrapperState extends State<DriverDataWrapper> {
             return const SignInPage();
           }
           if (guser.access == Access.denied) {
-            return  NotRegisteredPage(onUpdate: (){
-              setState(() {
-
-              });
-            },);
+            return NotRegisteredPage(
+              onUpdate: () {
+                setState(() {});
+              },
+            );
           }
           //Check if it is Driver account
           if (!guser.role.contains(Roles.driver)) {
-            return  NotRegisteredPage(onUpdate: ()=>setState(() {
-
-            }),);
+            return NotRegisteredPage(
+              onUpdate: () => setState(() {}),
+            );
           }
           listenerAccess?.cancel();
           sharedProvider.driver = guser;

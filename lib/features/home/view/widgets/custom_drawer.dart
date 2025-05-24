@@ -1,9 +1,12 @@
 //import 'package:driver_app/features/home/viewmodel/home_view_model.dart';
+import 'package:driver_app/features/admin/view/pages/home_admin.dart';
+import 'package:driver_app/features/admin/view/pages/list_drivers.dart';
 import 'package:driver_app/features/ride_history/view/pages/ride_history_page.dart';
 import 'package:driver_app/features/settings/view/pages/settings_page.dart';
 import 'package:driver_app/features/technical_support/view/pages/technical_support.dart';
 import 'package:driver_app/features/termns_and_conditions/view/pages/privacy_policy.dart';
 import 'package:driver_app/features/termns_and_conditions/view/pages/termns_and_conditions_page.dart';
+import 'package:driver_app/shared/models/g_user.dart';
 import 'package:driver_app/shared/providers/shared_provider.dart';
 import 'package:driver_app/shared/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +19,7 @@ class CustomDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sharedProvider = Provider.of<SharedProvider>(context);
-   // final homeViewModel = Provider.of<HomeViewModel>(context);
+    // final homeViewModel = Provider.of<HomeViewModel>(context);
     return Drawer(
       backgroundColor: Theme.of(context).colorScheme.surface,
       child: Padding(
@@ -75,6 +78,7 @@ class CustomDrawer extends StatelessWidget {
                       //     icon: const Icon(Ionicons.chevron_forward))
                     ],
                   ),
+
                 //Configuración
                 //Trips history
                 ListTile(
@@ -146,11 +150,30 @@ class CustomDrawer extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>  const  PrivacyPolicyPage(),
+                        builder: (context) => const PrivacyPolicyPage(),
                       ),
                     );
                   },
                 ),
+
+                //Administrador
+                if (sharedProvider.driver!.role.contains(Roles.admin) ||
+                    sharedProvider.driver!.role.contains(Roles.superUser))
+                  ListTile(
+                    leading: const Icon(Icons.admin_panel_settings),
+                    title: const Text(
+                      "Administrador",
+                      style: TextStyle(fontSize: 17),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeAdminPage(),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
             //Sing Out
